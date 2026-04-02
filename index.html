@@ -58,11 +58,43 @@
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Load current links as soon as the page opens or cafe changes
+      // 1. New function to fetch all cafes and fill the select dropdown
+      async function fetchCafes() {
+        const select = document.getElementById("cafe-select");
+
+        // Fetch only name and slug from the cafes table
+        const { data, error } = await db.from("cafes").select("name, slug");
+
+        if (error) {
+          console.error("Greška pri učitavanju kafića:", error);
+          return;
+        }
+
+        if (data) {
+          // Clear existing options
+          select.innerHTML = "";
+
+          // Add a placeholder/default option
+          data.forEach((cafe) => {
+            const option = document.createElement("option");
+            option.value = cafe.slug;
+            option.innerText = cafe.name;
+            select.appendChild(option);
+          });
+
+          // After loading the list, fetch the playlist for the first one selected
+          loadCurrentPlaylist();
+        }
+      }
+
+      // 2. Load current links based on the dynamic slug
       async function loadCurrentPlaylist() {
         const slug = document.getElementById("cafe-select").value;
         const textarea = document.getElementById("links-input");
 
+        if (!slug) return;
+
+        textarea.value = "";
         textarea.placeholder = "Učitavam trenutnu plejlistu...";
 
         const { data, error } = await db
@@ -72,7 +104,6 @@
           .single();
 
         if (data && data.playlist) {
-          // Turn IDs back into full YouTube links for easy editing
           const links = data.playlist
             .map((id) => `https://www.youtube.com/watch?v=${id}`)
             .join("\n");
@@ -87,13 +118,14 @@
       document
         .getElementById("cafe-select")
         .addEventListener("change", loadCurrentPlaylist);
-      window.onload = loadCurrentPlaylist;
+
+      // Update window.onload to fetch the cafe list first
+      window.onload = fetchCafes;
 
       async function updatePlaylist() {
         const slug = document.getElementById("cafe-select").value;
         const rawLinks = document.getElementById("links-input").value;
 
-        // Extract YouTube IDs
         const ids = rawLinks
           .split("\n")
           .map((link) => {
@@ -118,7 +150,7 @@
           alert("Greška u bazi: " + error.message);
         } else {
           alert(`Uspelo! ${ids.length} pesama je sačuvano za ${slug}.`);
-          loadCurrentPlaylist(); // Refresh the list
+          loadCurrentPlaylist();
         }
       }
     </script>
