@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="sr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>okradio - ADMIN</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      body {
+        background: #121212;
+        color: white;
+        font-family: sans-serif;
+        padding: 40px;
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        background: #222;
+        color: #0f0;
+        border: 1px solid #444;
+        padding: 10px;
+      }
+      select,
+      button {
+        padding: 10px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      .box {
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>okradio Admin Panel</h1>
+
+    <div class="box">
+      <h3>1. Izaberi kafić</h3>
+      <select id="cafe-select">
+        <option value="sunce">Cafe Sunce</option>
+        <option value="mesec">Cafe Mesec</option>
+      </select>
+
+      <h3>2. Zalepi YouTube linkove (jedan po redu)</h3>
+      <textarea
+        id="links-input"
+        placeholder="https://www.youtube.com/watch?v=..."
+      ></textarea>
+
+      <br />
+      <button onclick="updatePlaylist()">AŽURIRAJ PLEJLISTU</button>
+    </div>
+
+    <script>
+      const SUPABASE_URL = "https://wnfvyylfinrghsrmhmlp.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
+      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      async function updatePlaylist() {
+        const slug = document.getElementById("cafe-select").value;
+        const rawLinks = document.getElementById("links-input").value;
+
+        // Logika koja izvlači ID-eve iz linkova
+        const ids = rawLinks
+          .split("\n")
+          .map((link) => {
+            const match = link.match(/(?:v=|\/v\/|youtu\.be\/)([^& \n?]+)/);
+            return match ? match[1] : null;
+          })
+          .filter((id) => id !== null);
+
+        if (ids.length === 0) {
+          alert("Nisam pronašao validne linkove!");
+          return;
+        }
+
+        const { error } = await db
+          .from("cafes")
+          .update({ playlist: ids })
+          .eq("slug", slug);
+
+        if (error) {
+          alert("Greška: " + error.message);
+        } else {
+          alert(`Uspešno dodato ${ids.length} pesama za ${slug}!`);
+        }
+      }
+    </script>
+  </body>
+</html>
