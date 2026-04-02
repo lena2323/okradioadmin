@@ -58,18 +58,43 @@
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+      async function loadCurrentPlaylist() {
+        const slug = document.getElementById("cafe-select").value;
+        const { data, error } = await db
+          .from("cafes")
+          .select("playlist")
+          .eq("slug", slug)
+          .single();
+
+        if (data && data.playlist) {
+          const fullLinks = data.playlist
+            .map((id) => `https://www.youtube.com/watch?v=${id}`)
+            .join("\n");
+          document.getElementById("links-input").value = fullLinks;
+        } else {
+          document.getElementById("links-input").value = "";
+        }
+      }
+
+      loadCurrentPlaylist();
+
+      document
+        .getElementById("cafe-select")
+        .addEventListener("change", loadCurrentPlaylist);
+
       async function updatePlaylist() {
         const slug = document.getElementById("cafe-select").value;
         const rawLinks = document.getElementById("links-input").value;
 
-        // Logika koja izvlači ID-eve iz linkova
         const ids = rawLinks
           .split("\n")
           .map((link) => {
-            const match = link.match(/(?:v=|\/v\/|youtu\.be\/)([^& \n?]+)/);
+            const match = link.match(
+              /(?:v=|\/v\/|youtu\.be\/|embed\/)([^& \n?#]+)/,
+            );
             return match ? match[1] : null;
           })
-          .filter((id) => id !== null);
+          .filter((id) => id !== null && id.trim() !== "");
 
         if (ids.length === 0) {
           alert("Nisam pronašao validne linkove!");
@@ -84,7 +109,9 @@
         if (error) {
           alert("Greška: " + error.message);
         } else {
-          alert(`Uspešno dodato ${ids.length} pesama za ${slug}!`);
+          alert(
+            `Uspešno ažurirana plejlista za ${slug}! Ukupno ${ids.length} pesama.`,
+          );
         }
       }
     </script>
