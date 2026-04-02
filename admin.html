@@ -58,8 +58,13 @@
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+      // Load current links as soon as the page opens or cafe changes
       async function loadCurrentPlaylist() {
         const slug = document.getElementById("cafe-select").value;
+        const textarea = document.getElementById("links-input");
+
+        textarea.placeholder = "Učitavam trenutnu plejlistu...";
+
         const { data, error } = await db
           .from("cafes")
           .select("playlist")
@@ -67,37 +72,40 @@
           .single();
 
         if (data && data.playlist) {
-          const fullLinks = data.playlist
+          // Turn IDs back into full YouTube links for easy editing
+          const links = data.playlist
             .map((id) => `https://www.youtube.com/watch?v=${id}`)
             .join("\n");
-          document.getElementById("links-input").value = fullLinks;
+          textarea.value = links;
         } else {
-          document.getElementById("links-input").value = "";
+          textarea.value = "";
+          textarea.placeholder = "Nema pesama u bazi.";
         }
       }
 
-      loadCurrentPlaylist();
-
+      // Event Listeners
       document
         .getElementById("cafe-select")
         .addEventListener("change", loadCurrentPlaylist);
+      window.onload = loadCurrentPlaylist;
 
       async function updatePlaylist() {
         const slug = document.getElementById("cafe-select").value;
         const rawLinks = document.getElementById("links-input").value;
 
+        // Extract YouTube IDs
         const ids = rawLinks
           .split("\n")
           .map((link) => {
             const match = link.match(
-              /(?:v=|\/v\/|youtu\.be\/|embed\/)([^& \n?#]+)/,
+              /(?:v=|\/v\/|youtu\.be\/|embed\/|youtu\.be\/)([^& \n?#]+)/,
             );
             return match ? match[1] : null;
           })
           .filter((id) => id !== null && id.trim() !== "");
 
         if (ids.length === 0) {
-          alert("Nisam pronašao validne linkove!");
+          alert("Greška: Ubaci bar jedan validan YouTube link!");
           return;
         }
 
@@ -107,11 +115,10 @@
           .eq("slug", slug);
 
         if (error) {
-          alert("Greška: " + error.message);
+          alert("Greška u bazi: " + error.message);
         } else {
-          alert(
-            `Uspešno ažurirana plejlista za ${slug}! Ukupno ${ids.length} pesama.`,
-          );
+          alert(`Uspelo! ${ids.length} pesama je sačuvano za ${slug}.`);
+          loadCurrentPlaylist(); // Refresh the list
         }
       }
     </script>
