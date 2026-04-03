@@ -22,7 +22,7 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: "Segoe UI", sans-serif;
       }
 
       body {
@@ -30,13 +30,50 @@
         color: var(--text);
         min-height: 100vh;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
         padding: 20px;
       }
 
+      /* --- AUTH OVERLAY --- */
+      #auth-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .auth-box {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 90%;
+        max-width: 400px;
+      }
+
+      .auth-box input {
+        width: 100%;
+        padding: 12px;
+        margin: 20px 0;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background: #000;
+        color: #fff;
+        text-align: center;
+        font-size: 1.1rem;
+      }
+
+      /* --- MAIN CARD (Hidden by default) --- */
       .admin-card {
+        display: none; /* Skriveno dok se ne potvrdi lozinka */
         background: var(--card-bg);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -44,10 +81,9 @@
         max-width: 600px;
         padding: 40px;
         border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        position: relative;
       }
 
+      /* Ostali stilovi ostaju isti kao u tvojim prethodnim fajlovima */
       header {
         text-align: center;
         margin-bottom: 30px;
@@ -57,11 +93,6 @@
         color: var(--primary);
         margin-bottom: 10px;
       }
-      h1 {
-        font-size: 1.8rem;
-        letter-spacing: 1px;
-      }
-
       .status-badge {
         display: inline-block;
         background: rgba(137, 199, 83, 0.1);
@@ -70,10 +101,8 @@
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: bold;
-        margin-top: 8px;
         text-transform: uppercase;
       }
-
       textarea {
         width: 100%;
         height: 200px;
@@ -83,11 +112,9 @@
         border-radius: 12px;
         padding: 15px;
         font-family: "Courier New", monospace;
-        font-size: 0.9rem;
         resize: none;
         outline: none;
       }
-
       .btn-primary {
         width: 100%;
         margin-top: 25px;
@@ -104,7 +131,6 @@
         gap: 10px;
         transition: 0.3s;
       }
-
       .btn-secondary {
         width: 100%;
         margin-top: 15px;
@@ -115,7 +141,6 @@
         border-radius: 12px;
         cursor: pointer;
       }
-
       #song-list-container {
         margin-top: 20px;
         max-height: 250px;
@@ -125,7 +150,6 @@
         display: none;
         border: 1px solid rgba(255, 255, 255, 0.05);
       }
-
       .song-item {
         display: flex;
         align-items: center;
@@ -134,23 +158,14 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         font-size: 0.85rem;
       }
-
       .song-item i {
         color: var(--primary);
       }
-      .song-info {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .song-info b {
-        color: var(--primary);
-      } /* Isticanje izvođača */
-
       .footer-info {
         margin-top: 30px;
         text-align: center;
         color: #94a3b8;
+        font-size: 0.9rem;
       }
       .ok-brand {
         color: #fff;
@@ -166,28 +181,38 @@
         font-size: 0.75rem;
         opacity: 0.6;
       }
-
-      .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--card-bg);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        border-radius: 24px;
-        z-index: 10;
-      }
     </style>
   </head>
   <body>
-    <div class="admin-card">
-      <div id="loader" class="loading-overlay">
-        <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <div id="auth-container">
+      <div class="auth-box">
+        <i
+          class="fas fa-lock"
+          style="font-size: 2rem; color: var(--primary)"
+        ></i>
+        <h2 style="margin-top: 15px">Admin Pristup</h2>
+        <input
+          type="password"
+          id="pass-input"
+          placeholder="Unesite lozinku..."
+          onkeypress="handleEnter(event)"
+        />
+        <button class="btn-primary" onclick="checkPassword()">PRISTUPI</button>
+        <p
+          id="error-msg"
+          style="
+            color: #ff4d4d;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: none;
+          "
+        >
+          Lozinka nije tačna!
+        </p>
       </div>
+    </div>
 
+    <div class="admin-card" id="main-panel">
       <header>
         <i class="fas fa-sun"></i>
         <h1>Cafe Sunce</h1>
@@ -195,13 +220,8 @@
       </header>
 
       <div class="input-group">
-        <label
-          ><i class="fab fa-youtube"></i> YouTube Linkovi (jedan po redu)</label
-        >
-        <textarea
-          id="links-input"
-          placeholder="Zalepite linkove ovde..."
-        ></textarea>
+        <label><i class="fab fa-youtube"></i> YouTube Linkovi</label>
+        <textarea id="links-input"></textarea>
       </div>
 
       <button class="btn-primary" onclick="updatePlaylist()">
@@ -213,7 +233,7 @@
         id="toggle-list-btn"
         onclick="toggleSongList()"
       >
-        <i class="fas fa-list"></i> PRIKAŽI TRENUTNU LISTU PESAMA
+        <i class="fas fa-list"></i> PRIKAŽI TRENUTNU LISTU
       </button>
 
       <div id="song-list-container"></div>
@@ -223,9 +243,7 @@
           Sinhronizacija sa <span class="ok-brand">ok</span
           ><span class="radio-brand">radio</span> plejerom.
         </p>
-        <span class="copyright"
-          >&copy; 2026 OK Radio Smederevska Palanka. Sva prava zadržana.</span
-        >
+        <span class="copyright">&copy; 2026 OK Radio Smederevska Palanka.</span>
       </div>
     </div>
 
@@ -235,25 +253,98 @@
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       const CAFE_SLUG = "sunce";
 
-      let currentPlaylistIds = [];
+      let authenticatedPassword = ""; // Čuvamo lozinku za update proveru
 
-      async function loadPlaylist() {
-        document.getElementById("loader").style.display = "flex";
-        const { data, error } = await db
+      function handleEnter(e) {
+        if (e.key === "Enter") checkPassword();
+      }
+
+      async function checkPassword() {
+        const input = document.getElementById("pass-input").value;
+        const error = document.getElementById("error-msg");
+
+        // Proveravamo bazu: tražimo red gde je slug 'sunce' i password se poklapa
+        const { data, error: dbError } = await db
           .from("cafes")
           .select("playlist")
           .eq("slug", CAFE_SLUG)
+          .eq("password", input)
           .single();
-        if (!error && data) {
-          currentPlaylistIds = data.playlist;
-          document.getElementById("links-input").value = data.playlist
-            .map((id) => `https://www.youtube.com/watch?v=${id}`)
-            .join("\n");
+
+        if (data) {
+          // Uspeh!
+          authenticatedPassword = input;
+          document.getElementById("auth-container").style.display = "none";
+          document.getElementById("main-panel").style.display = "block";
+
+          // Tek sada učitavamo linkove
+          renderLinks(data.playlist);
+        } else {
+          error.style.display = "block";
+          document.getElementById("pass-input").value = "";
         }
-        document.getElementById("loader").style.display = "none";
       }
 
-      // Funkcija koja čisti YouTube naslov (Ista kao u glavnom plejeru)
+      function renderLinks(ids) {
+        if (!ids) return;
+        document.getElementById("links-input").value = ids
+          .map((id) => `https://www.youtube.com/watch?v=${id}`)
+          .join("\n");
+        // Sačuvamo ID-jeve za listu pesama
+        window.currentPlaylistIds = ids;
+      }
+
+      async function updatePlaylist() {
+        const rawLinks = document.getElementById("links-input").value;
+        const ids = rawLinks
+          .split("\n")
+          .map((l) => {
+            const m = l.match(
+              /(?:v=|\/v\/|youtu\.be\/|embed\/|youtu\.be\/)([^& \n?#]+)/,
+            );
+            return m ? m[1] : null;
+          })
+          .filter((id) => id !== null);
+
+        // Biramo dugme unutar main-panel-a da ne bi menjali dugme na login ekranu
+        const btn = document.querySelector("#main-panel .btn-primary");
+        const originalHTML = btn.innerHTML; // Čuvamo original (ikonica + tekst)
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ČUVANJE...';
+
+        const { error } = await db
+          .from("cafes")
+          .update({ playlist: ids })
+          .eq("slug", CAFE_SLUG)
+          .eq("password", authenticatedPassword);
+
+        if (!error) {
+          btn.style.background = "#fff"; // Pobeli dugme za uspeh
+          btn.innerHTML = '<i class="fas fa-check"></i> SAČUVANO!';
+
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.style.background = ""; // Vrati zelenu boju
+            btn.innerHTML = originalHTML; // Vrati "SAČUVAJ IZMENE" sa ikonicom
+          }, 2000);
+
+          window.currentPlaylistIds = ids;
+
+          // Ako je lista pesama otvorena, osveži i nju
+          if (
+            document.getElementById("song-list-container").style.display ===
+            "block"
+          ) {
+            renderSongNames();
+          }
+        } else {
+          alert("Greška pri čuvanju!");
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+        }
+      }
+      // --- Ostale funkcije za listu pesama (cleanMeta, toggleSongList, renderSongNames) ostaju iste ---
       function cleanMeta(title, author) {
         let artist = author.replace(" - Topic", "");
         let song = title;
@@ -271,9 +362,8 @@
       async function renderSongNames() {
         const container = document.getElementById("song-list-container");
         container.innerHTML =
-          '<p style="text-align:center; padding:15px; font-size:0.8rem; opacity:0.6;">Učitavam čiste nazive...</p>';
-
-        const promises = currentPlaylistIds.map(async (id) => {
+          '<p style="text-align:center; padding:10px; opacity:0.5;">Učitavam...</p>';
+        const promises = window.currentPlaylistIds.map(async (id) => {
           try {
             const res = await fetch(
               `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`,
@@ -285,7 +375,6 @@
             return `ID: ${id}`;
           }
         });
-
         const titles = await Promise.all(promises);
         container.innerHTML = titles
           .map(
@@ -297,58 +386,10 @@
 
       function toggleSongList() {
         const container = document.getElementById("song-list-container");
-        const btn = document.getElementById("toggle-list-btn");
         const isOpen = container.style.display === "block";
         container.style.display = isOpen ? "none" : "block";
-        btn.innerHTML = isOpen
-          ? '<i class="fas fa-list"></i> PRIKAŽI TRENUTNU LISTU PESAMA'
-          : '<i class="fas fa-times"></i> SAKRIJ LISTU PESAMA';
         if (!isOpen) renderSongNames();
       }
-
-      async function updatePlaylist() {
-        const rawLinks = document.getElementById("links-input").value;
-        const ids = rawLinks
-          .split("\n")
-          .map((l) => {
-            const m = l.match(
-              /(?:v=|\/v\/|youtu\.be\/|embed\/|youtu\.be\/)([^& \n?#]+)/,
-            );
-            return m ? m[1] : null;
-          })
-          .filter((id) => id !== null && id.trim() !== "");
-
-        if (ids.length === 0) return alert("Unesite ispravne linkove!");
-
-        const btn = document.querySelector(".btn-primary");
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ČUVANJE...';
-
-        const { error } = await db
-          .from("cafes")
-          .update({ playlist: ids })
-          .eq("slug", CAFE_SLUG);
-        if (!error) {
-          btn.style.background = "#fff";
-          btn.innerHTML = '<i class="fas fa-check"></i> SAČUVANO';
-          currentPlaylistIds = ids;
-          setTimeout(() => {
-            btn.style.background = "";
-            btn.innerHTML = '<i class="fas fa-sync-alt"></i> SAČUVAJ IZMENE';
-            btn.disabled = false;
-            if (
-              document.getElementById("song-list-container").style.display ===
-              "block"
-            )
-              renderSongNames();
-          }, 2000);
-        } else {
-          alert("Greška!");
-          btn.disabled = false;
-        }
-      }
-
-      window.onload = loadPlaylist;
     </script>
   </body>
 </html>
