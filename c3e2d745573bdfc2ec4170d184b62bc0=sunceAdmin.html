@@ -71,9 +71,9 @@
         font-size: 1.1rem;
       }
 
-      /* --- MAIN CARD (Hidden by default) --- */
+      /* --- MAIN CARD --- */
       .admin-card {
-        display: none; /* Skriveno dok se ne potvrdi lozinka */
+        display: none;
         background: var(--card-bg);
         backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -83,7 +83,6 @@
         border-radius: 24px;
       }
 
-      /* Ostali stilovi ostaju isti kao u tvojim prethodnim fajlovima */
       header {
         text-align: center;
         margin-bottom: 30px;
@@ -114,6 +113,7 @@
         font-family: "Courier New", monospace;
         resize: none;
         outline: none;
+        margin-top: 10px;
       }
       .btn-primary {
         width: 100%;
@@ -158,28 +158,11 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         font-size: 0.85rem;
       }
-      .song-item i {
-        color: var(--primary);
-      }
       .footer-info {
         margin-top: 30px;
         text-align: center;
         color: #94a3b8;
         font-size: 0.9rem;
-      }
-      .ok-brand {
-        color: #fff;
-        font-weight: bold;
-      }
-      .radio-brand {
-        color: var(--primary);
-        font-weight: bold;
-      }
-      .copyright {
-        display: block;
-        margin-top: 10px;
-        font-size: 0.75rem;
-        opacity: 0.6;
       }
     </style>
   </head>
@@ -194,7 +177,7 @@
         <input
           type="password"
           id="pass-input"
-          placeholder="Unesite lozinku..."
+          placeholder="Lozinka..."
           onkeypress="handleEnter(event)"
         />
         <button class="btn-primary" onclick="checkPassword()">PRISTUPI</button>
@@ -220,8 +203,14 @@
       </header>
 
       <div class="input-group">
-        <label><i class="fab fa-youtube"></i> YouTube Linkovi</label>
-        <textarea id="links-input"></textarea>
+        <label
+          ><i class="fab fa-youtube"></i> Linkovi ili MP3 fajlovi (svaki u novom
+          redu)</label
+        >
+        <textarea
+          id="links-input"
+          placeholder="https://youtube.com/...&#10;pesma.mp3"
+        ></textarea>
       </div>
 
       <button class="btn-primary" onclick="updatePlaylist()">
@@ -240,10 +229,13 @@
 
       <div class="footer-info">
         <p>
-          Sinhronizacija sa <span class="ok-brand">ok</span
-          ><span class="radio-brand">radio</span> plejerom.
+          Sinhronizacija sa
+          <span style="color: #fff; font-weight: bold">ok</span
+          ><span style="color: var(--primary); font-weight: bold">radio</span>.
         </p>
-        <span class="copyright">&copy; 2026 OK Radio Smederevska Palanka.</span>
+        <span style="font-size: 0.75rem; opacity: 0.6"
+          >&copy; 2026 OK Radio Smederevska Palanka.</span
+        >
       </div>
     </div>
 
@@ -253,7 +245,8 @@
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       const CAFE_SLUG = "sunce";
 
-      let authenticatedPassword = ""; // Čuvamo lozinku za update proveru
+      let authenticatedPassword = "";
+      let currentPlaylistData = []; // Čuvamo niz objekata
 
       function handleEnter(e) {
         if (e.key === "Enter") checkPassword();
@@ -261,77 +254,96 @@
 
       async function checkPassword() {
         const input = document.getElementById("pass-input").value;
-        const error = document.getElementById("error-msg");
+        const errorMsg = document.getElementById("error-msg");
 
-        // Proveravamo bazu: tražimo red gde je slug 'sunce' i password se poklapa
-        const { data, error: dbError } = await db
+        console.log("Pokušaj prijave za:", CAFE_SLUG);
+
+        // Dohvatamo lozinku i plejlistu za proveru
+        const { data, error } = await db
           .from("cafes")
-          .select("playlist")
+          .select("playlist, password")
           .eq("slug", CAFE_SLUG)
-          .eq("password", input)
           .single();
 
-        if (data) {
-          // Uspeh!
+        if (data && data.password === input) {
+          console.log("Prijava uspešna!");
           authenticatedPassword = input;
+          currentPlaylistData = data.playlist || [];
+
           document.getElementById("auth-container").style.display = "none";
           document.getElementById("main-panel").style.display = "block";
 
-          // Tek sada učitavamo linkove
-          renderLinks(data.playlist);
+          renderLinksToTextarea(currentPlaylistData);
         } else {
-          error.style.display = "block";
+          console.error("Neuspešna prijava ili greška:", error);
+          errorMsg.style.display = "block";
           document.getElementById("pass-input").value = "";
         }
       }
 
-      function renderLinks(ids) {
-        if (!ids) return;
-        document.getElementById("links-input").value = ids
-          .map((id) => `https://www.youtube.com/watch?v=${id}`)
-          .join("\n");
-        // Sačuvamo ID-jeve za listu pesama
-        window.currentPlaylistIds = ids;
+      function renderLinksToTextarea(playlist) {
+        if (!playlist || !Array.isArray(playlist)) return;
+
+        const lines = playlist.map((item) => {
+          if (item.type === "youtube")
+            return `https://www.youtube.com/watch?v=${item.id}`;
+          if (item.type === "mp3") return item.id; // npr. balkan.mp3
+          return "";
+        });
+
+        document.getElementById("links-input").value = lines.join("\n");
       }
 
       async function updatePlaylist() {
-        const rawLinks = document.getElementById("links-input").value;
-        const ids = rawLinks
-          .split("\n")
-          .map((l) => {
-            const m = l.match(
-              /(?:v=|\/v\/|youtu\.be\/|embed\/|youtu\.be\/)([^& \n?#]+)/,
-            );
-            return m ? m[1] : null;
-          })
-          .filter((id) => id !== null);
+        const rawInput = document.getElementById("links-input").value;
+        const lines = rawInput.split("\n").filter((line) => line.trim() !== "");
 
-        // Biramo dugme unutar main-panel-a da ne bi menjali dugme na login ekranu
+        // Pravimo niz objekata za bazu
+        const newPlaylist = lines
+          .map((line) => {
+            line = line.trim();
+            const ytMatch = line.match(
+              /(?:v=|\/v\/|youtu\.be\/|embed\/)([^& \n?#]+)/,
+            );
+
+            if (ytMatch) {
+              return { type: "youtube", id: ytMatch[1] };
+            } else if (line.toLowerCase().endsWith(".mp3")) {
+              const cleanTitle = line.replace(".mp3", "").replace(/_/g, " ");
+              return {
+                type: "mp3",
+                id: line,
+                title: cleanTitle,
+                artist: "Lokalni Fajl",
+              };
+            }
+            return null;
+          })
+          .filter((item) => item !== null);
+
         const btn = document.querySelector("#main-panel .btn-primary");
-        const originalHTML = btn.innerHTML; // Čuvamo original (ikonica + tekst)
+        const originalHTML = btn.innerHTML;
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ČUVANJE...';
 
         const { error } = await db
           .from("cafes")
-          .update({ playlist: ids })
+          .update({ playlist: newPlaylist })
           .eq("slug", CAFE_SLUG)
           .eq("password", authenticatedPassword);
 
         if (!error) {
-          btn.style.background = "#fff"; // Pobeli dugme za uspeh
-          btn.innerHTML = '<i class="fas fa-check"></i> SAČUVANO!';
+          btn.style.background = "#fff";
+          btn.innerHTML = '<i class="fas fa-check"></i> SAČUVAVANO!';
+          currentPlaylistData = newPlaylist;
 
           setTimeout(() => {
             btn.disabled = false;
-            btn.style.background = ""; // Vrati zelenu boju
-            btn.innerHTML = originalHTML; // Vrati "SAČUVAJ IZMENE" sa ikonicom
+            btn.style.background = "";
+            btn.innerHTML = originalHTML;
           }, 2000);
 
-          window.currentPlaylistIds = ids;
-
-          // Ako je lista pesama otvorena, osveži i nju
           if (
             document.getElementById("song-list-container").style.display ===
             "block"
@@ -339,12 +351,12 @@
             renderSongNames();
           }
         } else {
-          alert("Greška pri čuvanju!");
+          alert("Greška: " + error.message);
           btn.disabled = false;
           btn.innerHTML = originalHTML;
         }
       }
-      // --- Ostale funkcije za listu pesama (cleanMeta, toggleSongList, renderSongNames) ostaju iste ---
+
       function cleanMeta(title, author) {
         let artist = author.replace(" - Topic", "");
         let song = title;
@@ -362,19 +374,25 @@
       async function renderSongNames() {
         const container = document.getElementById("song-list-container");
         container.innerHTML =
-          '<p style="text-align:center; padding:10px; opacity:0.5;">Učitavam...</p>';
-        const promises = window.currentPlaylistIds.map(async (id) => {
-          try {
-            const res = await fetch(
-              `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`,
-            );
-            const json = await res.json();
-            const meta = cleanMeta(json.title, json.author_name);
-            return `<b>${meta.artist}</b> - ${meta.song}`;
-          } catch (e) {
-            return `ID: ${id}`;
+          '<p style="text-align:center; padding:10px; opacity:0.5;">Učitavam listu...</p>';
+
+        const promises = currentPlaylistData.map(async (item) => {
+          if (item.type === "youtube") {
+            try {
+              const res = await fetch(
+                `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${item.id}&format=json`,
+              );
+              const json = await res.json();
+              const meta = cleanMeta(json.title, json.author_name);
+              return `<b>${meta.artist}</b> - ${meta.song}`;
+            } catch (e) {
+              return `YouTube: ${item.id}`;
+            }
+          } else {
+            return `<i class="fas fa-file-audio"></i> ${item.title}`;
           }
         });
+
         const titles = await Promise.all(promises);
         container.innerHTML = titles
           .map(
