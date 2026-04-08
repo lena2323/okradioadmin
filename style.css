@@ -1,0 +1,184 @@
+:root {
+  --primary: #89c753;
+  --primary-hover: #76ac46;
+  --danger: #ff4d4d;
+  --bg: #0f172a;
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --text: #f1f5f9;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+body {
+  background: radial-gradient(circle at top left, #1e293b, #0f172a);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+#auth-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.auth-box {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 90%;
+  max-width: 400px;
+}
+.auth-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 20px 0;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #000;
+  color: #fff;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.admin-card {
+  display: none;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
+  border-radius: 24px;
+}
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+header i {
+  font-size: 3rem;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+.status-badge {
+  display: inline-block;
+  background: rgba(137, 199, 83, 0.1);
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+textarea {
+  width: 100%;
+  height: 150px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  font-family: "Courier New", monospace;
+  resize: none;
+  outline: none;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  width: 100%;
+  margin-top: 25px;
+  padding: 15px;
+  background: var(--primary);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: 0.3s;
+}
+.btn-secondary {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+#song-list-container {
+  margin-top: 20px;
+  max-height: 350px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.2s;
+}
+.song-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.song-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.song-info i {
+  color: var(--primary);
+  width: 15px;
+  margin-top: 8px;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 8px;
+  transition: 0.2s;
+}
+.delete-btn:hover {
+  color: var(--danger);
+  transform: scale(1.1);
+}
+
+.footer-info {
+  margin-top: 30px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
