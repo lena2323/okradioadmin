@@ -360,11 +360,14 @@
 
         try {
           // OBAVEZNO proveri port ovde (mora biti 5240 ako je to dotnet port)
-          const res = await fetch("http://localhost:5240/upload", {
-            method: "POST",
-            body: formData,
-            // Ne stavljaj Content-Type header, fetch će ga sam postaviti ispravno
-          });
+          const res = await fetch(
+            "http://okradio.runasp.net/UploadApi/upload",
+            {
+              method: "POST",
+              body: formData,
+              // Ne stavljaj Content-Type header, fetch će ga sam postaviti ispravno
+            },
+          );
 
           if (res.ok) {
             bar.style.width = "100%";

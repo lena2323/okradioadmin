@@ -1,0 +1,8 @@
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\UploadApi.exe
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\appsettings.Development.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\appsettings.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\UploadApi.dll
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\UploadApi.deps.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\UploadApi.runtimeconfig.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\UploadApi.pdb
+C:\_LENA\programiranje1\okradioadmin\UploadApi\publish\FluentFTP.dll

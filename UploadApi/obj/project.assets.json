@@ -2,15 +2,15 @@
   "version": 3,
   "targets": {
     "net9.0": {
-      "FluentFTP/54.1.0": {
+      "FluentFTP/39.1.0": {
         "type": "package",
         "compile": {
-          "lib/net9.0/FluentFTP.dll": {
+          "lib/net6.0/FluentFTP.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net9.0/FluentFTP.dll": {
+          "lib/net6.0/FluentFTP.dll": {
             "related": ".xml"
           }
         }
@@ -18,26 +18,32 @@
     }
   },
   "libraries": {
-    "FluentFTP/54.1.0": {
-      "sha512": "jrRKiLzh0F/NyKmIB+evQj6FylrXWMVPkjyZNvHJxmXPm54FNoF6gHB7vMcK8f9GH5wqvUuB0NGoBOFENmcbEQ==",
+    "FluentFTP/39.1.0": {
+      "sha512": "rkIBFx6grM9jO0FKo6RHvdtjPYTSoTfoI8BdJ3Pj3fYO54wcHCvLHq7md46gcQxCni6g5HgCx6pktoreimJXnw==",
       "type": "package",
-      "path": "fluentftp/54.1.0",
+      "path": "fluentftp/39.1.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.TXT",
-        "fluentftp.54.1.0.nupkg.sha512",
+        "fluentftp.39.1.0.nupkg.sha512",
         "fluentftp.nuspec",
-        "lib/net462/FluentFTP.dll",
-        "lib/net462/FluentFTP.xml",
-        "lib/net472/FluentFTP.dll",
-        "lib/net472/FluentFTP.xml",
-        "lib/net7.0/FluentFTP.dll",
-        "lib/net7.0/FluentFTP.xml",
-        "lib/net8.0/FluentFTP.dll",
-        "lib/net8.0/FluentFTP.xml",
-        "lib/net9.0/FluentFTP.dll",
-        "lib/net9.0/FluentFTP.xml",
+        "lib/net20/FluentFTP.dll",
+        "lib/net20/FluentFTP.xml",
+        "lib/net35/FluentFTP.dll",
+        "lib/net35/FluentFTP.xml",
+        "lib/net40/FluentFTP.dll",
+        "lib/net40/FluentFTP.xml",
+        "lib/net45/FluentFTP.dll",
+        "lib/net45/FluentFTP.xml",
+        "lib/net5.0/FluentFTP.dll",
+        "lib/net5.0/FluentFTP.xml",
+        "lib/net6.0/FluentFTP.dll",
+        "lib/net6.0/FluentFTP.xml",
+        "lib/netstandard1.4/FluentFTP.dll",
+        "lib/netstandard1.4/FluentFTP.xml",
+        "lib/netstandard1.6/FluentFTP.dll",
+        "lib/netstandard1.6/FluentFTP.xml",
         "lib/netstandard2.0/FluentFTP.dll",
         "lib/netstandard2.0/FluentFTP.xml",
         "lib/netstandard2.1/FluentFTP.dll",
@@ -48,7 +54,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "FluentFTP >= 54.1.0"
+      "FluentFTP >= 39.0.3"
     ]
   },
   "packageFolders": {
@@ -103,7 +109,7 @@
         "dependencies": {
           "FluentFTP": {
             "target": "Package",
-            "version": "[54.1.0, )"
+            "version": "[39.0.3, )"
           }
         },
         "imports": [
@@ -128,5 +134,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "UploadApi depends on FluentFTP (>= 39.0.3) but FluentFTP 39.0.3 was not found. FluentFTP 39.1.0 was resolved instead.",
+      "libraryId": "FluentFTP",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
 }

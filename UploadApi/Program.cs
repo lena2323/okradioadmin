@@ -1,16 +1,17 @@
 using FluentFTP;
+using FluentFTP.Helpers; // Obavezno za ConnectAsync i UploadStreamAsync u v39
 using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Allow large uploads
-builder.Services.Configure<FormOptions>(o =>
-{
-    o.MultipartBodyLengthLimit = 500_000_000; // 500 MB
+builder.Services.Configure<FormOptions>(o => {
+    o.MultipartBodyLengthLimit = 500_000_000; 
 });
 builder.Services.AddCors();
 var app = builder.Build();
 
+// OVO ĆE TI POKAZATI TAČNU GREŠKU UMESTO "500"
+app.UseDeveloperExceptionPage(); 
 
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
@@ -22,37 +23,38 @@ app.MapPost("/upload", async (HttpRequest request) =>
         var file = form.Files.FirstOrDefault();
         if (file == null) return Results.BadRequest("Nema fajla.");
 
-        // Save temp file
-        var tempFile = Path.GetTempFileName();
-        using (var fs = File.Create(tempFile))
-        {
-            await file.CopyToAsync(fs);
-        }
-
         var ftpHost = "usa10.fastcast4u.com";
         var ftpUser = "lena2323";
-        var ftpPass = "av6VDA8TsZ4MXPR"; // replace with your real password
+        var ftpPass = "av6VDA8TsZ4MXPR";
         var remotePath = "/media/Server_1/" + file.FileName;
 
         using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
+
+        // FIX ZA VERZIJU 39.1.0 (Podešavanja direktno na klijentu)
+        ftp.ConnectTimeout = 10000; // 10 sekundi
+        ftp.ReadTimeout = 10000;
+        ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
         ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
-        ftp.Connect(); // sync connect
 
-        // Upload using file path
-        var status = ftp.UploadFile(tempFile, remotePath, FluentFTP.FtpRemoteExists.Overwrite);
+        Console.WriteLine("Povezujem se na FTP...");
+        await ftp.ConnectAsync();
 
-        // Delete temp file
-        File.Delete(tempFile);
+        using var fileStream = file.OpenReadStream();
+        
+        // Slanje fajla
+        var status = await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
 
-        if (status == FluentFTP.FtpStatus.Success)
+        await ftp.DisconnectAsync();
+
+        if (status == FtpStatus.Success)
             return Results.Ok("Fajl uspešno poslat!");
         else
-            return Results.Problem("FTP upload nije uspeo!");
+            return Results.Problem($"FTP status: {status}");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[ERROR] {ex.Message}");
-        return Results.Problem(ex.Message);
+        // Ova poruka će se pojaviti u browseru zahvaljujući UseDeveloperExceptionPage
+        return Results.Problem("DEBUG GREŠKA: " + ex.ToString());
     }
 });
 
