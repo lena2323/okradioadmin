@@ -9,7 +9,216 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root {
+        --primary: #89c753;
+        --primary-hover: #76ac46;
+        --danger: #ff4d4d;
+        --bg: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.8);
+        --text: #f1f5f9;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+      }
+      body {
+        background: radial-gradient(circle at top left, #1e293b, #0f172a);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      #auth-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .auth-box {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 90%;
+        max-width: 400px;
+      }
+      .auth-box input {
+        width: 100%;
+        padding: 12px;
+        margin: 20px 0;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background: #000;
+        color: #fff;
+        text-align: center;
+        font-size: 1.1rem;
+      }
+
+      .admin-card {
+        display: none;
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
+        max-width: 600px;
+        padding: 40px;
+        border-radius: 24px;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      header i {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+      .status-badge {
+        display: inline-block;
+        background: rgba(137, 199, 83, 0.1);
+        color: var(--primary);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      textarea {
+        width: 100%;
+        height: 120px;
+        background: rgba(15, 23, 42, 0.6);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 15px;
+        font-family: "Courier New", monospace;
+        resize: none;
+        outline: none;
+        margin-top: 10px;
+      }
+
+      .btn-primary {
+        width: 100%;
+        margin-top: 25px;
+        padding: 15px;
+        background: var(--primary);
+        color: #000;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        transition: 0.3s;
+      }
+
+      /* Multi-delete button */
+      #mass-delete-btn {
+        display: none;
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px;
+        background: var(--danger);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      #song-list-container {
+        margin-top: 20px;
+        max-height: 350px;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .song-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: 0.2s;
+        position: relative;
+      }
+      .song-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .song-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Checkbox styling */
+      .song-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--primary);
+        opacity: 0.3; /* Skoro nevidljiv dok se ne hoveruje ili čekira */
+        transition: opacity 0.2s;
+      }
+      .song-item:hover .song-checkbox,
+      .song-checkbox:checked {
+        opacity: 1;
+      }
+
+      .song-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+        overflow: hidden;
+      }
+      .song-info i {
+        color: var(--primary);
+      }
+
+      .delete-btn {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        padding: 8px;
+        transition: 0.2s;
+      }
+      .delete-btn:hover {
+        color: var(--danger);
+        transform: scale(1.1);
+      }
+
+      .footer-info {
+        margin-top: 30px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.9rem;
+      }
+    </style>
   </head>
   <body>
     <div id="auth-container">
@@ -54,7 +263,7 @@
         >
         <textarea
           id="links-input"
-          placeholder="Nalepi nove linkove ovde..."
+          placeholder="Nalepi linkove ovde i klikni DODAJ..."
         ></textarea>
       </div>
 
@@ -62,9 +271,26 @@
         <i class="fas fa-plus"></i> DODAJ NA LISTU
       </button>
 
-      <h3 style="margin-top: 30px; font-size: 1rem; opacity: 0.7">
-        <i class="fas fa-list"></i> Trenutna Plejlista
+      <h3
+        style="
+          margin-top: 30px;
+          font-size: 1rem;
+          opacity: 0.7;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <span><i class="fas fa-list"></i> Trenutna Plejlista</span>
       </h3>
+
+      <button id="mass-delete-btn" onclick="deleteSelectedSongs()">
+        <i class="fas fa-trash-sweep"></i> OBRIŠI OZNAČENO (<span
+          id="selected-count"
+          >0</span
+        >)
+      </button>
+
       <div id="song-list-container"></div>
 
       <div class="footer-info">
@@ -95,7 +321,6 @@
       async function checkPassword() {
         const input = document.getElementById("pass-input").value;
         const errorMsg = document.getElementById("error-msg");
-
         const { data, error } = await db
           .from("cafes")
           .select("playlist, password")
@@ -114,14 +339,51 @@
         }
       }
 
+      // Funkcija koja prati koliko je pesama selektovano
+      function updateSelectionUI() {
+        const selected = document.querySelectorAll(".song-checkbox:checked");
+        const massBtn = document.getElementById("mass-delete-btn");
+        const countSpan = document.getElementById("selected-count");
+
+        if (selected.length > 0) {
+          massBtn.style.display = "block";
+          countSpan.innerText = selected.length;
+        } else {
+          massBtn.style.display = "none";
+        }
+      }
+
       async function deleteSong(index) {
         if (!confirm("Da li ste sigurni da želite da obrišete ovu pesmu?"))
           return;
-
-        // Ukloni pesmu iz lokalnog niza
         currentPlaylistData.splice(index, 1);
+        savePlaylistToDB();
+      }
 
-        // Odmah pošalji promenu u bazu
+      async function deleteSelectedSongs() {
+        const selectedCheckboxes = document.querySelectorAll(
+          ".song-checkbox:checked",
+        );
+        if (
+          !confirm(
+            `Da li ste sigurni da želite da obrišete ${selectedCheckboxes.length} pesama?`,
+          )
+        )
+          return;
+
+        // Dobijamo indekse koje treba obrisati (od najvećeg ka najmanjem da ne poremetimo niz)
+        const indicesToDelete = Array.from(selectedCheckboxes)
+          .map((cb) => parseInt(cb.dataset.index))
+          .sort((a, b) => b - a);
+
+        indicesToDelete.forEach((index) => {
+          currentPlaylistData.splice(index, 1);
+        });
+
+        savePlaylistToDB();
+      }
+
+      async function savePlaylistToDB() {
         const { error } = await db
           .from("cafes")
           .update({ playlist: currentPlaylistData })
@@ -129,25 +391,19 @@
           .eq("password", authenticatedPassword);
 
         if (!error) {
-          renderSongNames(); // Osveži UI
-          renderLinksToTextarea(); // Osveži textarea
+          renderSongNames();
+          updateSelectionUI();
         } else {
-          alert("Greška pri brisanju: " + error.message);
+          alert("Greška pri čuvanju: " + error.message);
         }
       }
 
-      function renderLinksToTextarea() {
-        const lines = currentPlaylistData.map((item) => {
-          if (item.type === "youtube")
-            return `https://www.youtube.com/watch?v=${item.id}`;
-          return item.id;
-        });
-        document.getElementById("links-input").value = lines.join("\n");
-      }
-
       async function updatePlaylist() {
-        const rawInput = document.getElementById("links-input").value;
+        const textarea = document.getElementById("links-input");
+        const rawInput = textarea.value;
         const lines = rawInput.split("\n").filter((line) => line.trim() !== "");
+
+        if (lines.length === 0) return;
 
         const newEntries = lines
           .map((line) => {
@@ -168,12 +424,9 @@
           })
           .filter((item) => item !== null);
 
-        // Spajamo staru listu sa novim unosima
         currentPlaylistData = [...currentPlaylistData, ...newEntries];
-
         const btn = document.querySelector(".btn-primary");
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ČUVANJE...';
 
         const { error } = await db
           .from("cafes")
@@ -182,16 +435,11 @@
           .eq("password", authenticatedPassword);
 
         if (!error) {
-          btn.innerHTML = '<i class="fas fa-check"></i> USPEŠNO DODATO';
-          document.getElementById("links-input").value = ""; // Isprazni textarea
+          textarea.value = "";
           renderSongNames();
           setTimeout(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-plus"></i> DODAJ NA LISTU';
-          }, 2000);
-        } else {
-          alert("Greška: " + error.message);
-          btn.disabled = false;
+          }, 1000);
         }
       }
 
@@ -233,11 +481,14 @@
 
           return `
             <div class="song-item">
-              <div class="song-info">
-                <i class="fas fa-music"></i>
-                <span>${displayName}</span>
+              <div class="song-left">
+                <input type="checkbox" class="song-checkbox" data-index="${index}" onchange="updateSelectionUI()">
+                <div class="song-info">
+                  <i class="fas fa-music"></i>
+                  <span>${displayName}</span>
+                </div>
               </div>
-              <button class="delete-btn" onclick="deleteSong(${index})" title="Obriši pesmu">
+              <button class="delete-btn" onclick="deleteSong(${index})" title="Obriši">
                 <i class="fas fa-trash-alt"></i>
               </button>
             </div>`;
@@ -248,7 +499,7 @@
           htmlItems.length > 0
             ? htmlItems.join("")
             : '<p style="text-align:center; padding:20px; opacity:0.5;">Lista je prazna.</p>';
-        renderLinksToTextarea();
+        updateSelectionUI();
       }
     </script>
   </body>
