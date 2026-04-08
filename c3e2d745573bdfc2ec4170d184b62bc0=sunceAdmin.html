@@ -12,19 +12,20 @@
     <style>
       :root {
         --primary: #89c753;
-        --primary-hover: #76ac46;
-        --danger: #ff4d4d;
+        --primary-dark: #76ac46;
         --bg: #0f172a;
-        --card-bg: rgba(30, 41, 59, 0.8);
+        --card-bg: rgba(30, 41, 59, 0.95);
         --text: #f1f5f9;
+        --accent: #2563eb;
       }
 
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: "Segoe UI", sans-serif;
+        font-family: "Segoe UI", Roboto, sans-serif;
       }
+
       body {
         background: radial-gradient(circle at top left, #1e293b, #0f172a);
         color: var(--text);
@@ -35,6 +36,7 @@
         padding: 20px;
       }
 
+      /* Auth Screen */
       #auth-container {
         position: fixed;
         top: 0;
@@ -53,170 +55,148 @@
         border-radius: 20px;
         text-align: center;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        width: 90%;
+        width: 100%;
         max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       }
       .auth-box input {
         width: 100%;
         padding: 12px;
         margin: 20px 0;
-        border-radius: 8px;
-        border: 1px solid #444;
-        background: #000;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        background: #020617;
         color: #fff;
         text-align: center;
         font-size: 1.1rem;
+        outline: none;
       }
 
+      /* Main Panel Card */
       .admin-card {
         display: none;
         background: var(--card-bg);
-        backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         width: 100%;
-        max-width: 600px;
-        padding: 40px;
+        max-width: 550px;
+        padding: 35px;
         border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
       }
+
       header {
         text-align: center;
         margin-bottom: 30px;
       }
       header i {
-        font-size: 3rem;
+        font-size: 2.5rem;
         color: var(--primary);
         margin-bottom: 10px;
       }
-      .status-badge {
-        display: inline-block;
-        background: rgba(137, 199, 83, 0.1);
-        color: var(--primary);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: bold;
-        text-transform: uppercase;
+      header h1 {
+        font-size: 1.8rem;
+        letter-spacing: -0.5px;
       }
 
-      textarea {
+      .section-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: var(--primary);
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        opacity: 0.7;
+      }
+
+      input[type="text"],
+      select {
         width: 100%;
-        height: 120px;
-        background: rgba(15, 23, 42, 0.6);
-        color: #fff;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
-        padding: 15px;
-        font-family: "Courier New", monospace;
-        resize: none;
+        color: #fff;
         outline: none;
-        margin-top: 10px;
+        transition: 0.2s;
+      }
+      input[type="text"]:focus {
+        border-color: var(--primary);
+        background: rgba(0, 0, 0, 0.6);
       }
 
-      .btn-primary {
+      /* Buttons */
+      .btn {
         width: 100%;
-        margin-top: 25px;
-        padding: 15px;
-        background: var(--primary);
-        color: #000;
-        border: none;
+        padding: 14px;
         border-radius: 12px;
-        font-weight: bold;
+        font-weight: 700;
         cursor: pointer;
+        transition: 0.3s;
+        border: none;
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 10px;
-        transition: 0.3s;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #064e3b;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
       }
 
-      /* Multi-delete button */
-      #mass-delete-btn {
-        display: none;
-        width: 100%;
-        margin-top: 10px;
-        padding: 12px;
-        background: var(--danger);
+      .btn-accent {
+        background: var(--accent);
         color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: bold;
-        cursor: pointer;
+        margin-top: 15px;
+        font-size: 0.9rem;
+      }
+
+      /* Upload Zone */
+      .upload-zone {
+        margin-top: 30px;
+        padding: 25px;
+        background: rgba(137, 199, 83, 0.03);
+        border: 2px dashed rgba(137, 199, 83, 0.3);
+        border-radius: 18px;
+        text-align: center;
+      }
+      .progress-container {
+        display: none;
+        margin-top: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        height: 6px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        width: 0%;
+        height: 100%;
+        background: var(--primary);
         transition: 0.3s;
       }
 
-      #song-list-container {
-        margin-top: 20px;
-        max-height: 350px;
-        overflow-y: auto;
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-      }
-
-      .song-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        transition: 0.2s;
-        position: relative;
-      }
-      .song-item:hover {
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .song-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-        overflow: hidden;
-      }
-
-      /* Checkbox styling */
-      .song-checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        accent-color: var(--primary);
-        opacity: 0.3; /* Skoro nevidljiv dok se ne hoveruje ili čekira */
-        transition: opacity 0.2s;
-      }
-      .song-item:hover .song-checkbox,
-      .song-checkbox:checked {
-        opacity: 1;
-      }
-
-      .song-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 0.85rem;
-        overflow: hidden;
-      }
-      .song-info i {
-        color: var(--primary);
-      }
-
-      .delete-btn {
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.3);
-        cursor: pointer;
-        padding: 8px;
-        transition: 0.2s;
-      }
-      .delete-btn:hover {
-        color: var(--danger);
-        transform: scale(1.1);
-      }
-
-      .footer-info {
-        margin-top: 30px;
-        text-align: center;
-        color: #94a3b8;
-        font-size: 0.9rem;
+      .preview-img {
+        width: 100%;
+        height: 140px;
+        border-radius: 15px;
+        object-fit: cover;
+        margin-top: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
     </style>
   </head>
@@ -224,85 +204,91 @@
     <div id="auth-container">
       <div class="auth-box">
         <i
-          class="fas fa-lock"
-          style="font-size: 2rem; color: var(--primary)"
+          class="fas fa-shield-alt"
+          style="font-size: 2.5rem; color: var(--primary)"
         ></i>
-        <h2 style="margin-top: 15px">Admin Pristup</h2>
+        <h2 style="margin-top: 15px">Admin Panel</h2>
         <input
           type="password"
           id="pass-input"
-          placeholder="Lozinka..."
-          onkeypress="handleEnter(event)"
+          placeholder="Lozinka"
+          onkeypress="if (event.key === 'Enter') checkPassword();"
         />
-        <button class="btn-primary" onclick="checkPassword()">PRISTUPI</button>
-        <p
-          id="error-msg"
-          style="
-            color: #ff4d4d;
-            font-size: 0.8rem;
-            margin-top: 10px;
-            display: none;
-          "
-        >
-          Lozinka nije tačna!
-        </p>
+        <button class="btn btn-primary" onclick="checkPassword()">
+          AUTORIZUJ
+        </button>
       </div>
     </div>
 
     <div class="admin-card" id="main-panel">
       <header>
         <i class="fas fa-sun"></i>
-        <h1>Cafe Sunce</h1>
-        <div class="status-badge">Upravljanje Plejlistom</div>
+        <h1 id="display-name">Cafe Sunce</h1>
       </header>
 
+      <div class="section-title">
+        <i class="fas fa-paint-brush"></i> Izgled Plejera
+      </div>
+
       <div class="input-group">
-        <label
-          ><i class="fab fa-youtube"></i> Dodaj nove linkove ili MP3 (jedan po
-          redu)</label
-        >
-        <textarea
-          id="links-input"
-          placeholder="Nalepi linkove ovde i klikni DODAJ..."
-        ></textarea>
+        <label>Naziv lokala</label>
+        <input type="text" id="cafe-name-input" />
       </div>
 
-      <button class="btn-primary" onclick="updatePlaylist()">
-        <i class="fas fa-plus"></i> DODAJ NA LISTU
+      <div class="input-group">
+        <label>Pozadinska slika (URL)</label>
+        <input
+          type="text"
+          id="bg-url-input"
+          oninput="updatePreview(this.value)"
+        />
+        <img id="preview" class="preview-img" src="" />
+      </div>
+
+      <button class="btn btn-primary" onclick="saveData()">
+        <i class="fas fa-save"></i> SAČUVAJ IZMENE
       </button>
 
-      <h3
-        style="
-          margin-top: 30px;
-          font-size: 1rem;
-          opacity: 0.7;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        "
-      >
-        <span><i class="fas fa-list"></i> Trenutna Plejlista</span>
-      </h3>
+      <div class="section-title" style="margin-top: 40px">
+        <i class="fas fa-music"></i> Muzika & Server
+      </div>
 
-      <button id="mass-delete-btn" onclick="deleteSelectedSongs()">
-        <i class="fas fa-trash-sweep"></i> OBRIŠI OZNAČENO (<span
-          id="selected-count"
-          >0</span
-        >)
-      </button>
-
-      <div id="song-list-container"></div>
-
-      <div class="footer-info">
-        <p>
-          Sinhronizacija sa
-          <span style="color: #fff; font-weight: bold">ok</span
-          ><span style="color: var(--primary); font-weight: bold">radio</span>.
+      <div class="upload-zone">
+        <p style="margin-bottom: 15px; font-size: 0.9rem; opacity: 0.8">
+          Prevuci MP3 fajlove ovde
         </p>
-        <span style="font-size: 0.75rem; opacity: 0.6"
-          >&copy; 2026 OK Radio Smederevska Palanka.</span
+        <input
+          type="file"
+          id="music-upload"
+          multiple
+          accept=".mp3"
+          style="display: none"
+          onchange="handleFileUpload(this.files)"
+        />
+        <button
+          class="btn"
+          style="background: #334155; color: #fff"
+          onclick="document.getElementById('music-upload').click()"
         >
+          <i class="fas fa-file-upload"></i> IZABERI FAJLOVE
+        </button>
+
+        <div id="upload-progress-container" class="progress-container">
+          <div id="upload-bar" class="progress-bar"></div>
+        </div>
+        <div
+          id="upload-status"
+          style="font-size: 0.75rem; margin-top: 8px; opacity: 0.6"
+        ></div>
       </div>
+
+      <a
+        href="https://usa10.fastcast4u.com:2070/"
+        target="_blank"
+        class="btn btn-accent"
+      >
+        <i class="fas fa-external-link-alt"></i> EVERESTCAST KOMANDNI PANEL
+      </a>
     </div>
 
     <script>
@@ -311,195 +297,85 @@
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       const CAFE_SLUG = "sunce";
 
-      let authenticatedPassword = "";
-      let currentPlaylistData = [];
+      // TVOJ API KLJUČ
+      const SUNCE_API_KEY = "lPI6fRMX.DfWaHmm3soFkYAZhqlrs7BEh7lT6CaCY";
 
-      function handleEnter(e) {
-        if (e.key === "Enter") checkPassword();
-      }
+      let authenticatedPassword = "";
 
       async function checkPassword() {
         const input = document.getElementById("pass-input").value;
-        const errorMsg = document.getElementById("error-msg");
         const { data, error } = await db
           .from("cafes")
-          .select("playlist, password")
+          .select("*")
           .eq("slug", CAFE_SLUG)
           .single();
 
         if (data && data.password === input) {
           authenticatedPassword = input;
-          currentPlaylistData = data.playlist || [];
           document.getElementById("auth-container").style.display = "none";
           document.getElementById("main-panel").style.display = "block";
-          renderSongNames();
+
+          document.getElementById("display-name").innerText = data.name;
+          document.getElementById("cafe-name-input").value = data.name;
+          document.getElementById("bg-url-input").value = data.bg_url;
+          updatePreview(data.bg_url);
         } else {
-          errorMsg.style.display = "block";
-          document.getElementById("pass-input").value = "";
+          alert("Pogrešna lozinka!");
         }
       }
 
-      // Funkcija koja prati koliko je pesama selektovano
-      function updateSelectionUI() {
-        const selected = document.querySelectorAll(".song-checkbox:checked");
-        const massBtn = document.getElementById("mass-delete-btn");
-        const countSpan = document.getElementById("selected-count");
-
-        if (selected.length > 0) {
-          massBtn.style.display = "block";
-          countSpan.innerText = selected.length;
-        } else {
-          massBtn.style.display = "none";
-        }
+      function updatePreview(url) {
+        if (url) document.getElementById("preview").src = url;
       }
 
-      async function deleteSong(index) {
-        if (!confirm("Da li ste sigurni da želite da obrišete ovu pesmu?"))
-          return;
-        currentPlaylistData.splice(index, 1);
-        savePlaylistToDB();
-      }
-
-      async function deleteSelectedSongs() {
-        const selectedCheckboxes = document.querySelectorAll(
-          ".song-checkbox:checked",
-        );
-        if (
-          !confirm(
-            `Da li ste sigurni da želite da obrišete ${selectedCheckboxes.length} pesama?`,
-          )
-        )
-          return;
-
-        // Dobijamo indekse koje treba obrisati (od najvećeg ka najmanjem da ne poremetimo niz)
-        const indicesToDelete = Array.from(selectedCheckboxes)
-          .map((cb) => parseInt(cb.dataset.index))
-          .sort((a, b) => b - a);
-
-        indicesToDelete.forEach((index) => {
-          currentPlaylistData.splice(index, 1);
-        });
-
-        savePlaylistToDB();
-      }
-
-      async function savePlaylistToDB() {
+      async function saveData() {
         const { error } = await db
           .from("cafes")
-          .update({ playlist: currentPlaylistData })
-          .eq("slug", CAFE_SLUG)
-          .eq("password", authenticatedPassword);
-
-        if (!error) {
-          renderSongNames();
-          updateSelectionUI();
-        } else {
-          alert("Greška pri čuvanju: " + error.message);
-        }
-      }
-
-      async function updatePlaylist() {
-        const textarea = document.getElementById("links-input");
-        const rawInput = textarea.value;
-        const lines = rawInput.split("\n").filter((line) => line.trim() !== "");
-
-        if (lines.length === 0) return;
-
-        const newEntries = lines
-          .map((line) => {
-            line = line.trim();
-            const ytMatch = line.match(
-              /(?:v=|\/v\/|youtu\.be\/|embed\/)([^& \n?#]+)/,
-            );
-            if (ytMatch) return { type: "youtube", id: ytMatch[1] };
-            if (line.toLowerCase().endsWith(".mp3")) {
-              return {
-                type: "mp3",
-                id: line,
-                title: line.replace(".mp3", "").replace(/_/g, " "),
-                artist: "Lokalni Fajl",
-              };
-            }
-            return null;
+          .update({
+            name: document.getElementById("cafe-name-input").value,
+            bg_url: document.getElementById("bg-url-input").value,
           })
-          .filter((item) => item !== null);
-
-        currentPlaylistData = [...currentPlaylistData, ...newEntries];
-        const btn = document.querySelector(".btn-primary");
-        btn.disabled = true;
-
-        const { error } = await db
-          .from("cafes")
-          .update({ playlist: currentPlaylistData })
           .eq("slug", CAFE_SLUG)
           .eq("password", authenticatedPassword);
 
-        if (!error) {
-          textarea.value = "";
-          renderSongNames();
-          setTimeout(() => {
-            btn.disabled = false;
-          }, 1000);
-        }
+        if (!error) alert("Uspešno sačuvano!");
+        else alert("Greška: " + error.message);
       }
 
-      function cleanMeta(title, author) {
-        let artist = author.replace(" - Topic", "");
-        let song = title;
-        if (title.includes(" - ")) {
-          const parts = title.split(" - ");
-          artist = parts[0].trim();
-          song = parts[1].trim();
+      // RAD SA FAJLOVIMA (EVERESTCAST API)
+      async function handleFileUpload(files) {
+        if (!files.length) return;
+
+        const bar = document.getElementById("upload-bar");
+        const status = document.getElementById("upload-status");
+        const container = document.getElementById("upload-progress-container");
+
+        container.style.display = "block";
+        status.innerHTML = "⏳ Priprema...";
+
+        const formData = new FormData();
+        for (let f of files) {
+          formData.append("files", f); // .NET očekuje ključ "files"
         }
-        return {
-          artist,
-          song: song.replace(/\(Official.*\)|\[Official.*\]/gi, "").trim(),
-        };
-      }
 
-      async function renderSongNames() {
-        const container = document.getElementById("song-list-container");
-        container.innerHTML =
-          '<p style="text-align:center; padding:20px; opacity:0.5;">Učitavam listu...</p>';
+        try {
+          // OBAVEZNO proveri port ovde (mora biti 5240 ako je to dotnet port)
+          const res = await fetch("http://localhost:5240/upload", {
+            method: "POST",
+            body: formData,
+            // Ne stavljaj Content-Type header, fetch će ga sam postaviti ispravno
+          });
 
-        const promises = currentPlaylistData.map(async (item, index) => {
-          let displayName = "";
-          if (item.type === "youtube") {
-            try {
-              const res = await fetch(
-                `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${item.id}&format=json`,
-              );
-              const json = await res.json();
-              const meta = cleanMeta(json.title, json.author_name);
-              displayName = `<b>${meta.artist}</b> - ${meta.song}`;
-            } catch (e) {
-              displayName = `YouTube: ${item.id}`;
-            }
+          if (res.ok) {
+            bar.style.width = "100%";
+            status.innerHTML = "✅ USPEŠNO! Proveri EverestCast Panel.";
           } else {
-            displayName = `<i class="fas fa-file-audio"></i> ${item.title}`;
+            const err = await res.text();
+            status.innerHTML = "❌ Greška: " + err;
           }
-
-          return `
-            <div class="song-item">
-              <div class="song-left">
-                <input type="checkbox" class="song-checkbox" data-index="${index}" onchange="updateSelectionUI()">
-                <div class="song-info">
-                  <i class="fas fa-music"></i>
-                  <span>${displayName}</span>
-                </div>
-              </div>
-              <button class="delete-btn" onclick="deleteSong(${index})" title="Obriši">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            </div>`;
-        });
-
-        const htmlItems = await Promise.all(promises);
-        container.innerHTML =
-          htmlItems.length > 0
-            ? htmlItems.join("")
-            : '<p style="text-align:center; padding:20px; opacity:0.5;">Lista je prazna.</p>';
-        updateSelectionUI();
+        } catch (e) {
+          status.innerHTML = "❌ Backend nije dostupan!";
+        }
       }
     </script>
   </body>
