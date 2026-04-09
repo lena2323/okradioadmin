@@ -59,9 +59,3 @@ C:\_LENA\programiranje1\okradioadmin\UploadApi\obj\Debug\net9.0\ref\UploadApi.dl
 C:\_LENA\programiranje1\okradioadmin\UploadApi\obj\Debug\net9.0\UploadApi.csproj.AssemblyReference.cache
 C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\FluentFTP.dll
 C:\_LENA\programiranje1\okradioadmin\UploadApi\obj\Debug\net9.0\UploadApi.csproj.Up2Date
-C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\publish\web.config
-C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\publish\appsettings.Development.json
-C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\publish\appsettings.json
-C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\publish\UploadApi.deps.json
-C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\publish\UploadApi.runtimeconfig.json
-C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Debug\net9.0\publish\UploadApi.staticwebassets.endpoints.json

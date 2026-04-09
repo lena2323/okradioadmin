@@ -2,156 +2,384 @@
 <html lang="sr">
   <head>
     <meta charset="UTF-8" />
-    <title>okradio - ADMIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cafe Sunce | Admin Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
+      :root {
+        --primary: #89c753;
+        --primary-dark: #76ac46;
+        --bg: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.95);
+        --text: #f1f5f9;
+        --accent: #2563eb;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Roboto, sans-serif;
+      }
+
       body {
-        background: #121212;
-        color: white;
-        font-family: sans-serif;
-        padding: 40px;
-      }
-      textarea {
-        width: 100%;
-        height: 200px;
-        background: #222;
-        color: #0f0;
-        border: 1px solid #444;
-        padding: 10px;
-      }
-      select,
-      button {
-        padding: 10px;
-        margin-top: 10px;
-        cursor: pointer;
-      }
-      .box {
-        background: #1a1a1a;
+        background: radial-gradient(circle at top left, #1e293b, #0f172a);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         padding: 20px;
+      }
+
+      /* Auth Screen */
+      #auth-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .auth-box {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+      .auth-box input {
+        width: 100%;
+        padding: 12px;
+        margin: 20px 0;
         border-radius: 10px;
-        border: 1px solid #333;
+        border: 1px solid #334155;
+        background: #020617;
+        color: #fff;
+        text-align: center;
+        font-size: 1.1rem;
+        outline: none;
+      }
+
+      /* Main Panel Card */
+      .admin-card {
+        display: none;
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
+        max-width: 550px;
+        padding: 35px;
+        border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      header i {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+      header h1 {
+        font-size: 1.8rem;
+        letter-spacing: -0.5px;
+      }
+
+      .section-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: var(--primary);
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        opacity: 0.7;
+      }
+
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #fff;
+        outline: none;
+        transition: 0.2s;
+      }
+      input[type="text"]:focus {
+        border-color: var(--primary);
+        background: rgba(0, 0, 0, 0.6);
+      }
+
+      /* Buttons */
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #064e3b;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      .btn-accent {
+        background: var(--accent);
+        color: white;
+        margin-top: 15px;
+        font-size: 0.9rem;
+      }
+
+      /* Upload Zone */
+      .upload-zone {
+        margin-top: 30px;
+        padding: 25px;
+        background: rgba(137, 199, 83, 0.03);
+        border: 2px dashed rgba(137, 199, 83, 0.3);
+        border-radius: 18px;
+        text-align: center;
+      }
+      .progress-container {
+        display: none;
+        margin-top: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        height: 6px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        width: 0%;
+        height: 100%;
+        background: var(--primary);
+        transition: 0.3s;
+      }
+
+      .preview-img {
+        width: 100%;
+        height: 140px;
+        border-radius: 15px;
+        object-fit: cover;
+        margin-top: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
     </style>
   </head>
   <body>
-    <h1>okradio Admin Panel</h1>
+    <div id="auth-container">
+      <div class="auth-box">
+        <i
+          class="fas fa-shield-alt"
+          style="font-size: 2.5rem; color: var(--primary)"
+        ></i>
+        <h2 style="margin-top: 15px">Admin Panel</h2>
+        <input
+          type="password"
+          id="pass-input"
+          placeholder="Lozinka"
+          onkeypress="if (event.key === 'Enter') checkPassword();"
+        />
+        <button class="btn btn-primary" onclick="checkPassword()">
+          AUTORIZUJ
+        </button>
+      </div>
+    </div>
 
-    <div class="box">
-      <h3>1. Izaberi kafić</h3>
-      <select id="cafe-select">
-        <option value="sunce">Cafe Sunce</option>
-        <option value="mesec">Cafe Mesec</option>
-      </select>
+    <div class="admin-card" id="main-panel">
+      <header>
+        <i class="fas fa-sun"></i>
+        <h1 id="display-name">Cafe Sunce</h1>
+      </header>
 
-      <h3>2. Zalepi YouTube linkove (jedan po redu)</h3>
-      <textarea
-        id="links-input"
-        placeholder="https://www.youtube.com/watch?v=..."
-      ></textarea>
+      <div class="section-title">
+        <i class="fas fa-paint-brush"></i> Izgled Plejera
+      </div>
 
-      <br />
-      <button onclick="updatePlaylist()">AŽURIRAJ PLEJLISTU</button>
+      <div class="input-group">
+        <label>Naziv lokala</label>
+        <input type="text" id="cafe-name-input" />
+      </div>
+
+      <div class="input-group">
+        <label>Pozadinska slika (URL)</label>
+        <input
+          type="text"
+          id="bg-url-input"
+          oninput="updatePreview(this.value)"
+        />
+        <img id="preview" class="preview-img" src="" />
+      </div>
+
+      <button class="btn btn-primary" onclick="saveData()">
+        <i class="fas fa-save"></i> SAČUVAJ IZMENE
+      </button>
+
+      <div class="section-title" style="margin-top: 40px">
+        <i class="fas fa-music"></i> Muzika & Server
+      </div>
+
+      <div class="upload-zone">
+        <p style="margin-bottom: 15px; font-size: 0.9rem; opacity: 0.8">
+          Prevuci MP3 fajlove ovde
+        </p>
+        <input
+          type="file"
+          id="music-upload"
+          multiple
+          accept=".mp3"
+          style="display: none"
+          onchange="handleFileUpload(this.files)"
+        />
+        <button
+          class="btn"
+          style="background: #334155; color: #fff"
+          onclick="document.getElementById('music-upload').click()"
+        >
+          <i class="fas fa-file-upload"></i> IZABERI FAJLOVE
+        </button>
+
+        <div id="upload-progress-container" class="progress-container">
+          <div id="upload-bar" class="progress-bar"></div>
+        </div>
+        <div
+          id="upload-status"
+          style="font-size: 0.75rem; margin-top: 8px; opacity: 0.6"
+        ></div>
+      </div>
+
+      <a
+        href="https://usa10.fastcast4u.com:2070/"
+        target="_blank"
+        class="btn btn-accent"
+      >
+        <i class="fas fa-external-link-alt"></i> EVERESTCAST KOMANDNI PANEL
+      </a>
     </div>
 
     <script>
       const SUPABASE_URL = "https://wnfvyylfinrghsrmhmlp.supabase.co";
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const CAFE_SLUG = "sunce";
 
-      // 1. New function to fetch all cafes and fill the select dropdown
-      async function fetchCafes() {
-        const select = document.getElementById("cafe-select");
+      // TVOJ API KLJUČ
+      const SUNCE_API_KEY = "lPI6fRMX.DfWaHmm3soFkYAZhqlrs7BEh7lT6CaCY";
 
-        // Fetch only name and slug from the cafes table
-        const { data, error } = await db.from("cafes").select("name, slug");
+      let authenticatedPassword = "";
 
-        if (error) {
-          console.error("Greška pri učitavanju kafića:", error);
-          return;
-        }
-
-        if (data) {
-          // Clear existing options
-          select.innerHTML = "";
-
-          // Add a placeholder/default option
-          data.forEach((cafe) => {
-            const option = document.createElement("option");
-            option.value = cafe.slug;
-            option.innerText = cafe.name;
-            select.appendChild(option);
-          });
-
-          // After loading the list, fetch the playlist for the first one selected
-          loadCurrentPlaylist();
-        }
-      }
-
-      // 2. Load current links based on the dynamic slug
-      async function loadCurrentPlaylist() {
-        const slug = document.getElementById("cafe-select").value;
-        const textarea = document.getElementById("links-input");
-
-        if (!slug) return;
-
-        textarea.value = "";
-        textarea.placeholder = "Učitavam trenutnu plejlistu...";
-
+      async function checkPassword() {
+        const input = document.getElementById("pass-input").value;
         const { data, error } = await db
           .from("cafes")
-          .select("playlist")
-          .eq("slug", slug)
+          .select("*")
+          .eq("slug", CAFE_SLUG)
           .single();
 
-        if (data && data.playlist) {
-          const links = data.playlist
-            .map((id) => `https://www.youtube.com/watch?v=${id}`)
-            .join("\n");
-          textarea.value = links;
+        if (data && data.password === input) {
+          authenticatedPassword = input;
+          document.getElementById("auth-container").style.display = "none";
+          document.getElementById("main-panel").style.display = "block";
+
+          document.getElementById("display-name").innerText = data.name;
+          document.getElementById("cafe-name-input").value = data.name;
+          document.getElementById("bg-url-input").value = data.bg_url;
+          updatePreview(data.bg_url);
         } else {
-          textarea.value = "";
-          textarea.placeholder = "Nema pesama u bazi.";
+          alert("Pogrešna lozinka!");
         }
       }
 
-      // Event Listeners
-      document
-        .getElementById("cafe-select")
-        .addEventListener("change", loadCurrentPlaylist);
+      function updatePreview(url) {
+        if (url) document.getElementById("preview").src = url;
+      }
 
-      // Update window.onload to fetch the cafe list first
-      window.onload = fetchCafes;
-
-      async function updatePlaylist() {
-        const slug = document.getElementById("cafe-select").value;
-        const rawLinks = document.getElementById("links-input").value;
-
-        const ids = rawLinks
-          .split("\n")
-          .map((link) => {
-            const match = link.match(
-              /(?:v=|\/v\/|youtu\.be\/|embed\/|youtu\.be\/)([^& \n?#]+)/,
-            );
-            return match ? match[1] : null;
-          })
-          .filter((id) => id !== null && id.trim() !== "");
-
-        if (ids.length === 0) {
-          alert("Greška: Ubaci bar jedan validan YouTube link!");
-          return;
-        }
-
+      async function saveData() {
         const { error } = await db
           .from("cafes")
-          .update({ playlist: ids })
-          .eq("slug", slug);
+          .update({
+            name: document.getElementById("cafe-name-input").value,
+            bg_url: document.getElementById("bg-url-input").value,
+          })
+          .eq("slug", CAFE_SLUG)
+          .eq("password", authenticatedPassword);
 
-        if (error) {
-          alert("Greška u bazi: " + error.message);
-        } else {
-          alert(`Uspelo! ${ids.length} pesama je sačuvano za ${slug}.`);
-          loadCurrentPlaylist();
+        if (!error) alert("Uspešno sačuvano!");
+        else alert("Greška: " + error.message);
+      }
+
+      // RAD SA FAJLOVIMA (EVERESTCAST API)
+      async function handleFileUpload(files) {
+        if (!files.length) return;
+
+        const bar = document.getElementById("upload-bar");
+        const status = document.getElementById("upload-status");
+        const container = document.getElementById("upload-progress-container");
+
+        container.style.display = "block";
+        status.innerHTML = "⏳ Priprema...";
+
+        const formData = new FormData();
+        for (let f of files) {
+          formData.append("files", f); // .NET očekuje ključ "files"
+        }
+
+        try {
+          // OBAVEZNO proveri port ovde (mora biti 5240 ako je to dotnet port)
+          const res = await fetch(
+            "http://okradio.runasp.net/upload",
+            /*"http://localhost:5240/upload"*/
+            /*http://okradio.runasp.net/UploadApi/upload*/
+            {
+              method: "POST",
+              body: formData,
+              // Ne stavljaj Content-Type header, fetch će ga sam postaviti ispravno
+            },
+          );
+
+          if (res.ok) {
+            bar.style.width = "100%";
+            status.innerHTML = "✅ USPEŠNO! Proveri EverestCast Panel.";
+          } else {
+            const err = await res.text();
+            status.innerHTML = "❌ Greška: " + err;
+          }
+        } catch (e) {
+          status.innerHTML = "❌ Backend nije dostupan!";
         }
       }
     </script>

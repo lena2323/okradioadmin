@@ -57,6 +57,6 @@ app.MapPost("/upload", async (HttpRequest request) =>
         return Results.Problem("DEBUG GREŠKA: " + ex.ToString());
     }
 });
-app.MapGet("/", () => "API radi");
-app.MapGet("/upload", () => "Upload koristi POST");
+app.MapGet("/", () => "API radi!!!");
+app.MapGet("/upload", () => "Upload endpoint koristi POST");
 app.Run();
