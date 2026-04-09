@@ -267,7 +267,13 @@
           <i class="fas fa-sync-alt"></i> Osveži
         </button>
       </div>
-
+      <button
+        id="bulk-delete-btn"
+        class="btn btn-danger"
+        onclick="deleteSelectedSongs()"
+      >
+        <i class="fas fa-trash-sweep"></i> OBRIŠI OZNAČENO
+      </button>
       <div
         id="playlist-container"
         class="upload-zone"
@@ -385,6 +391,8 @@
 
       async function fetchPlaylist() {
         const songList = document.getElementById("song-list");
+        const bulkBtn = document.getElementById("bulk-delete-btn");
+        bulkBtn.style.display = "none";
         songList.innerHTML = "⏳ Učitavam listu pesama...";
         try {
           const response = await fetch("http://okradio.runasp.net/playlist");
@@ -400,18 +408,19 @@
             li.style.padding = "12px";
             li.style.borderBottom = "1px solid rgba(255,255,255,0.1)";
             li.style.display = "flex";
-            li.style.justifyContent = "space-between";
             li.style.alignItems = "center";
+            li.style.gap = "15px";
 
             li.innerHTML = `
-    <div>
-      <strong>${index + 1}.</strong> ${song.name} 
-      <span style="opacity:0.5; font-size:0.8rem; margin-left:10px;">(${(song.size / 1024 / 1024).toFixed(2)} MB)</span>
-    </div>
-    <button onclick="deleteSong('${song.name}')" style="background:none; border:none; color:#ff4444; cursor:pointer; padding:5px;">
-      <i class="fas fa-trash-alt"></i>
-    </button>
-  `;
+              <input type="checkbox" class="song-checkbox" value="${song.name}" onchange="toggleBulkButton()">
+              <div style="flex-grow: 1;">
+                <strong>${index + 1}.</strong> ${song.name} 
+                <span style="opacity:0.5; font-size:0.8rem; margin-left:10px;">(${(song.size / 1024 / 1024).toFixed(2)} MB)</span>
+              </div>
+              <button onclick="deleteSong('${song.name.replace(/'/g, "\\'")}')" style="background:none; border:none; color:#ff4444; cursor:pointer; padding:5px;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            `;
             songList.appendChild(li);
           });
         } catch (error) {
@@ -419,6 +428,7 @@
             "<li style='color:#ff4444;'>❌ Greška pri učitavanju liste.</li>";
         }
       }
+
       async function deleteSong(fileName) {
         if (
           !confirm(
@@ -449,6 +459,67 @@
           console.error(error);
           alert("Backend nije dostupan.");
         }
+      }
+
+      async function executeDelete(fileNames) {
+        const musicStatus = document.getElementById("music-status");
+        musicStatus.style.color = "var(--primary)";
+        musicStatus.innerHTML = `⏳ Brisanje u toku: 0/${fileNames.length}`;
+
+        let successCount = 0;
+
+        try {
+          // Prolazimo kroz niz naziva fajlova koje smo selektovali
+          for (let i = 0; i < fileNames.length; i++) {
+            const fileName = fileNames[i];
+
+            // Koristimo tvoju proverenu metodu: DELETE sa encodeURIComponent
+            const response = await fetch(
+              `http://okradio.runasp.net/playlist/${encodeURIComponent(fileName)}`,
+              {
+                method: "DELETE",
+              },
+            );
+
+            if (response.ok) {
+              successCount++;
+              // Ažuriramo status da vidiš napredak (npr. 1/3, 2/3...)
+              musicStatus.innerHTML = `⏳ Brisanje: ${successCount}/${fileNames.length}`;
+            } else {
+              console.error(`Neuspešno brisanje fajla: ${fileName}`);
+            }
+          }
+
+          musicStatus.innerHTML = `✅ Uspešno obrisano ${successCount} od ${fileNames.length} pesama.`;
+
+          // Na kraju osvežavamo listu samo jednom
+          fetchPlaylist();
+        } catch (error) {
+          console.error("Greška pri grupnom brisanju:", error);
+          alert("Backend nije dostupan.");
+        }
+      }
+      function toggleBulkButton() {
+        const checked = document.querySelectorAll(".song-checkbox:checked");
+        document.getElementById("bulk-delete-btn").style.display =
+          checked.length > 0 ? "flex" : "none";
+      }
+
+      // Funkcija koju poziva dugme "OBRIŠI OZNAČENO"
+      async function deleteSelectedSongs() {
+        const checked = document.querySelectorAll(".song-checkbox:checked");
+        const fileNames = Array.from(checked).map((cb) => cb.value);
+
+        if (fileNames.length === 0) return;
+
+        if (
+          !confirm(
+            `Da li ste sigurni da želite da obrišete ${fileNames.length} pesama?`,
+          )
+        )
+          return;
+
+        await executeDelete(fileNames);
       }
     </script>
   </body>
