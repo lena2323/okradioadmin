@@ -1,20 +1,27 @@
 using FluentFTP;
-using FluentFTP.Helpers; // Obavezno za ConnectAsync i UploadStreamAsync u v39
+using FluentFTP.Helpers;
 using Microsoft.AspNetCore.Http.Features;
+using System.Text;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<FormOptions>(o => {
     o.MultipartBodyLengthLimit = 500_000_000; 
 });
+
 builder.Services.AddCors();
 var app = builder.Build();
 
-// OVO ĆE TI POKAZATI TAČNU GREŠKU UMESTO "500"
 app.UseDeveloperExceptionPage(); 
-
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
+// --- FTP PODACI (Zajednički za obe rute) ---
+string ftpHost = "usa10.fastcast4u.com";
+string ftpUser = "lena2323";
+string ftpPass = "av6VDA8TsZ4MXPR";
+
+// --- RUTA ZA UPLOAD ---
 app.MapPost("/upload", async (HttpRequest request) =>
 {
     try
@@ -23,40 +30,55 @@ app.MapPost("/upload", async (HttpRequest request) =>
         var file = form.Files.FirstOrDefault();
         if (file == null) return Results.BadRequest("Nema fajla.");
 
-        var ftpHost = "usa10.fastcast4u.com";
-        var ftpUser = "lena2323";
-        var ftpPass = "av6VDA8TsZ4MXPR";
         var remotePath = "/media/Server_1/" + file.FileName;
 
         using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
-
-        // FIX ZA VERZIJU 39.1.0 (Podešavanja direktno na klijentu)
-        ftp.ConnectTimeout = 10000; // 10 sekundi
-        ftp.ReadTimeout = 10000;
         ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
         ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
 
-        Console.WriteLine("Povezujem se na FTP...");
+        await ftp.ConnectAsync();
+        using var fileStream = file.OpenReadStream();
+        var status = await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
+        await ftp.DisconnectAsync();
+
+        return status == FtpStatus.Success ? Results.Ok("Fajl poslat!") : Results.Problem("FTP Greška.");
+    }
+    catch (Exception ex) { return Results.Problem(ex.ToString()); }
+});
+
+// --- RUTA ZA LISTU PESAMA PREKO FTP-a ---
+app.MapGet("/playlist", async () =>
+{
+    try 
+    {
+        using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
+        ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
+        ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
+
         await ftp.ConnectAsync();
 
-        using var fileStream = file.OpenReadStream();
+        // Čitamo listu fajlova iz foldera Server_1
+        var list = await ftp.GetListingAsync("/media/Server_1/");
         
-        // Slanje fajla
-        var status = await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
+        // Pretvaramo FTP listu u jednostavan JSON format koji tvoj JS razume
+        var songs = list
+            .Where(f => f.Type == FtpObjectType.File)
+            .Select(f => new {
+                name = f.Name,
+                size = f.Size,
+                is_file = true
+            })
+            .ToList();
 
         await ftp.DisconnectAsync();
 
-        if (status == FtpStatus.Success)
-            return Results.Ok("Fajl uspešno poslat!");
-        else
-            return Results.Problem($"FTP status: {status}");
+        return Results.Json(songs);
     }
     catch (Exception ex)
     {
-        // Ova poruka će se pojaviti u browseru zahvaljujući UseDeveloperExceptionPage
-        return Results.Problem("DEBUG GREŠKA: " + ex.ToString());
+        return Results.Problem("FTP LIST GREŠKA: " + ex.Message);
     }
 });
-app.MapGet("/", () => "API radi!!!");
-app.MapGet("/upload", () => "Upload endpoint koristi POST");
+
+app.MapGet("/", () => "API Online - Čitanje liste ide preko FTP-a!");
 app.Run();

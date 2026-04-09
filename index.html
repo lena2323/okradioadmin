@@ -18,14 +18,12 @@
         --text: #f1f5f9;
         --accent: #2563eb;
       }
-
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         font-family: "Segoe UI", sans-serif;
       }
-
       body {
         background: radial-gradient(circle at top left, #1e293b, #0f172a);
         color: var(--text);
@@ -35,7 +33,6 @@
         align-items: center;
         padding: 20px;
       }
-
       #auth-container {
         position: fixed;
         top: 0;
@@ -48,7 +45,6 @@
         justify-content: center;
         align-items: center;
       }
-
       .auth-box,
       .admin-card {
         background: var(--card-bg);
@@ -59,11 +55,9 @@
         max-width: 500px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       }
-
       .admin-card {
         display: none;
       }
-
       header {
         text-align: center;
         margin-bottom: 30px;
@@ -73,7 +67,6 @@
         color: var(--primary);
         margin-bottom: 10px;
       }
-
       .section-title {
         font-size: 0.85rem;
         text-transform: uppercase;
@@ -84,7 +77,6 @@
         align-items: center;
         gap: 8px;
       }
-
       input[type="password"] {
         width: 100%;
         padding: 12px;
@@ -95,7 +87,6 @@
         color: #fff;
         text-align: center;
       }
-
       .btn {
         width: 100%;
         padding: 14px;
@@ -109,7 +100,6 @@
         align-items: center;
         gap: 10px;
       }
-
       .btn-primary {
         background: var(--primary);
         color: #064e3b;
@@ -118,7 +108,6 @@
         background: var(--primary-dark);
         transform: translateY(-2px);
       }
-
       .upload-zone {
         padding: 20px;
         background: rgba(255, 255, 255, 0.03);
@@ -126,7 +115,6 @@
         border-radius: 15px;
         text-align: center;
       }
-
       .preview-img {
         width: 100%;
         height: 160px;
@@ -136,7 +124,6 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         display: none;
       }
-
       .progress-container {
         display: none;
         margin-top: 10px;
@@ -151,7 +138,6 @@
         background: var(--primary);
         transition: 0.3s;
       }
-
       #cafe-display-name {
         font-size: 1.8rem;
         color: #fff;
@@ -200,7 +186,6 @@
         >
           <i class="fas fa-camera"></i> IZABERI NOVU SLIKU
         </button>
-
         <div id="preview-container" style="position: relative">
           <img
             id="bg-preview"
@@ -253,7 +238,6 @@
         >
           <i class="fas fa-file-upload"></i> IZABERI PESME
         </button>
-
         <div id="upload-progress-container" class="progress-container">
           <div id="upload-bar" class="progress-bar"></div>
         </div>
@@ -267,8 +251,9 @@
           "
         ></div>
       </div>
+
       <div class="section-title">
-        <i class="fas fa-list-ul"></i> Trenutna Lista Pesama (Music Manager)
+        <i class="fas fa-list-ul"></i> Trenutna Lista Pesama
         <button
           onclick="fetchPlaylist()"
           style="
@@ -299,8 +284,6 @@
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       const CAFE_SLUG = "sunce";
-      const SUNCE_API_KEY = "FQSMBiAc.OAzaGWsBsHaFW7wSKdV9tfb87yv6smXJ";
-      let currentPassword = "";
 
       async function checkPassword() {
         const input = document.getElementById("pass-input").value;
@@ -309,12 +292,9 @@
           .select("*")
           .eq("slug", CAFE_SLUG)
           .single();
-
         if (data && data.password === input) {
-          currentPassword = input;
           document.getElementById("auth-container").style.display = "none";
           document.getElementById("main-panel").style.display = "block";
-
           if (data.bg_url) {
             const img = document.getElementById("bg-preview");
             img.src = data.bg_url;
@@ -325,49 +305,39 @@
         }
       }
 
-      // NOVO: Upload slike direktno na Supabase
-      // --- FUNKCIJA ZA SLIKU ---
       async function uploadImage(file) {
         if (!file) return;
-
         const imgElement = document.getElementById("bg-preview");
         const loader = document.getElementById("img-loader");
         const imgStatus = document.getElementById("img-status");
 
-        // Instant preview
         imgElement.src = URL.createObjectURL(file);
         imgElement.style.display = "block";
         imgElement.style.opacity = "0.5";
         loader.style.display = "block";
-        imgStatus.innerHTML = "⏳ Šaljem sliku na Supabase...";
+        imgStatus.innerHTML = "⏳ Šaljem sliku na server...";
 
         try {
           const fileName = `bg-${Date.now()}.jpg`;
-
-          // Upload na Storage
-          const { data, error: uploadError } = await db.storage
+          const { error: uploadError } = await db.storage
             .from("backgrounds")
             .upload(fileName, file, { upsert: true });
-
           if (uploadError) throw uploadError;
 
-          // Uzmi javni URL
           const { data: urlData } = db.storage
             .from("backgrounds")
             .getPublicUrl(fileName);
           const publicUrl = urlData.publicUrl;
 
-          // Upis u bazu
           const { error: dbError } = await db
             .from("cafes")
             .update({ bg_url: publicUrl })
             .eq("slug", CAFE_SLUG);
           if (dbError) throw dbError;
 
-          // USPEH - ALERT ISPOD SLIKE
           imgElement.style.opacity = "1";
           loader.style.display = "none";
-          imgStatus.innerHTML = "✅ Slika je uspešno promenjena i sačuvana!";
+          imgStatus.innerHTML = "✅ Slika je uspešno sačuvana!";
         } catch (error) {
           imgStatus.innerHTML = "❌ Greška: " + error.message;
           imgStatus.style.color = "#ff4444";
@@ -375,10 +345,8 @@
         }
       }
 
-      // --- FUNKCIJA ZA MP3 ---
       async function handleFileUpload(files) {
         if (!files.length) return;
-
         const bar = document.getElementById("upload-bar");
         const musicStatus = document.getElementById("music-status");
         const container = document.getElementById("upload-progress-container");
@@ -400,85 +368,31 @@
           });
 
           if (res.ok) {
-            // USPEH - ALERT ISPOD MP3
             bar.style.width = "100%";
-            musicStatus.innerHTML =
-              "✅ Uspešno! Pesme su ubačene u Music Manager.";
+            musicStatus.innerHTML = "✅ Uspešno! Pesme su ubačene.";
           } else {
             const err = await res.text();
-            musicStatus.innerHTML = "❌ Greška pri slanju: " + err;
+            musicStatus.innerHTML = "❌ Greška: " + err;
             musicStatus.style.color = "#ff4444";
           }
         } catch (e) {
-          musicStatus.innerHTML = "❌ Radio server (backend) nije dostupan.";
+          musicStatus.innerHTML = "❌ Backend nije dostupan.";
           musicStatus.style.color = "#ff4444";
         }
       }
 
-      // Upload muzike (Tvoj postojeći kod koji kažeš da radi)
-      async function handleFileUpload(files) {
-        if (!files.length) return;
-
-        const bar = document.getElementById("upload-bar");
-        const musicStatus = document.getElementById("music-status");
-        const container = document.getElementById("upload-progress-container");
-
-        container.style.display = "block";
-        bar.style.width = "0%";
-        musicStatus.style.color = "var(--primary)";
-        musicStatus.innerHTML = "🚀 Slanje pesama na Radio Server...";
-
-        const formData = new FormData();
-        for (let f of files) {
-          formData.append("files", f);
-        }
-
-        try {
-          const res = await fetch("http://okradio.runasp.net/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (res.ok) {
-            // USPEH - ALERT ISPOD MP3
-            bar.style.width = "100%";
-            musicStatus.innerHTML =
-              "✅ Uspešno! Pesme su ubačene u Music Manager.";
-          } else {
-            const err = await res.text();
-            musicStatus.innerHTML = "❌ Greška pri slanju: " + err;
-            musicStatus.style.color = "#ff4444";
-          }
-        } catch (e) {
-          musicStatus.innerHTML = "❌ Radio server (backend) nije dostupan.";
-          musicStatus.style.color = "#ff4444";
-        }
-      }
       async function fetchPlaylist() {
         const songList = document.getElementById("song-list");
         songList.innerHTML = "⏳ Učitavam listu pesama...";
-
         try {
-          // Menjamo URL da gađa tvoj .NET backend (localhost ili tvoj runasp.net domen)
           const response = await fetch("http://okradio.runasp.net/playlist");
-          // Kad objaviš, koristi: http://okradio.runasp.net/playlist
-
-          if (!response.ok) throw new Error("Backend nije vratio listu.");
-
-          const data = await response.json();
-
-          // Čistimo listu i prikazujemo pesme
+          if (!response.ok) throw new Error("Backend greška.");
+          const songs = await response.json();
           songList.innerHTML = "";
-
-          // EverestCast API obično vraća niz objekata
-          // Filtriramo samo fajlove (is_file) i one koji su u tvom folderu
-          const songs = data.filter((item) => item.is_file === true);
-
           if (songs.length === 0) {
             songList.innerHTML = "<li>Nema pesama na serveru.</li>";
             return;
           }
-
           songs.forEach((song, index) => {
             const li = document.createElement("li");
             li.style.padding = "10px";
@@ -487,14 +401,10 @@
             songList.appendChild(li);
           });
         } catch (error) {
-          console.error(error);
           songList.innerHTML =
-            "<li style='color:#ff4444;'>❌ Greška: Proveri da li je .NET Backend pokrenut.</li>";
+            "<li style='color:#ff4444;'>❌ Greška pri učitavanju liste.</li>";
         }
       }
-
-      // Opciono: Pozovi listu čim se uloguješ
-      // checkPassword().then(() => fetchPlaylist());
     </script>
   </body>
 </html>

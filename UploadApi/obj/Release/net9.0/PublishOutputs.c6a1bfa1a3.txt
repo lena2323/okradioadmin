@@ -1,0 +1,8 @@
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\UploadApi.exe
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\appsettings.Development.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\appsettings.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\UploadApi.dll
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\UploadApi.deps.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\UploadApi.runtimeconfig.json
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\UploadApi.pdb
+C:\_LENA\programiranje1\okradioadmin\UploadApi\bin\Release\net9.0\publish\FluentFTP.dll
