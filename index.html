@@ -300,6 +300,8 @@
             img.src = data.bg_url;
             img.style.display = "block";
           }
+          // AUTOMATSKO UCITAVANJE LISTE NAKON PRIJAVE
+          fetchPlaylist();
         } else {
           alert("Pogrešna lozinka!");
         }
@@ -395,14 +397,57 @@
           }
           songs.forEach((song, index) => {
             const li = document.createElement("li");
-            li.style.padding = "10px";
+            li.style.padding = "12px";
             li.style.borderBottom = "1px solid rgba(255,255,255,0.1)";
-            li.innerHTML = `<strong>${index + 1}.</strong> ${song.name} <span style="opacity:0.5; font-size:0.8rem;">(${(song.size / 1024 / 1024).toFixed(2)} MB)</span>`;
+            li.style.display = "flex";
+            li.style.justifyContent = "space-between";
+            li.style.alignItems = "center";
+
+            li.innerHTML = `
+    <div>
+      <strong>${index + 1}.</strong> ${song.name} 
+      <span style="opacity:0.5; font-size:0.8rem; margin-left:10px;">(${(song.size / 1024 / 1024).toFixed(2)} MB)</span>
+    </div>
+    <button onclick="deleteSong('${song.name}')" style="background:none; border:none; color:#ff4444; cursor:pointer; padding:5px;">
+      <i class="fas fa-trash-alt"></i>
+    </button>
+  `;
             songList.appendChild(li);
           });
         } catch (error) {
           songList.innerHTML =
             "<li style='color:#ff4444;'>❌ Greška pri učitavanju liste.</li>";
+        }
+      }
+      async function deleteSong(fileName) {
+        if (
+          !confirm(
+            `Da li ste sigurni da želite da obrišete pesmu: ${fileName}?`,
+          )
+        )
+          return;
+
+        const musicStatus = document.getElementById("music-status");
+        musicStatus.innerHTML = "⏳ Brišem pesmu...";
+
+        try {
+          const response = await fetch(
+            `http://okradio.runasp.net/playlist/${encodeURIComponent(fileName)}`,
+            {
+              method: "DELETE",
+            },
+          );
+
+          if (response.ok) {
+            musicStatus.innerHTML = "✅ Pesma uspešno obrisana.";
+            fetchPlaylist(); // Osveži listu odmah
+          } else {
+            const err = await response.text();
+            alert("Greška pri brisanju: " + err);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Backend nije dostupan.");
         }
       }
     </script>

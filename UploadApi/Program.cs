@@ -79,6 +79,34 @@ app.MapGet("/playlist", async () =>
         return Results.Problem("FTP LIST GREŠKA: " + ex.Message);
     }
 });
+// --- RUTA ZA BRISANJE PESME (DELETE) ---
+app.MapDelete("/playlist/{fileName}", async (string fileName) =>
+{
+    try 
+    {
+        using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
+        ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
+        ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
 
+        await ftp.ConnectAsync();
+
+        string remotePath = "/media/Server_1/" + fileName;
+
+        // Proveravamo da li fajl postoji pre brisanja
+        if (await ftp.FileExistsAsync(remotePath))
+        {
+            await ftp.DeleteFileAsync(remotePath);
+            await ftp.DisconnectAsync();
+            return Results.Ok($"Fajl {fileName} je obrisan.");
+        }
+
+        await ftp.DisconnectAsync();
+        return Results.NotFound("Fajl nije pronađen na serveru.");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem("FTP DELETE GREŠKA: " + ex.Message);
+    }
+});
 app.MapGet("/", () => "API Online - Čitanje liste ide preko FTP-a!");
 app.Run();
