@@ -361,7 +361,9 @@
         try {
           // OBAVEZNO proveri port ovde (mora biti 5240 ako je to dotnet port)
           const res = await fetch(
-            "http://okradio.runasp.net/UploadApi/upload",
+            "http://okradio.runasp.net/upload",
+            /*"http://localhost:5240/upload"*/
+            /*http://okradio.runasp.net/UploadApi/upload*/
             {
               method: "POST",
               body: formData,
