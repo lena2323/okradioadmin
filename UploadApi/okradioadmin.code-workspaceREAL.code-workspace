@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "..",
+    },
+    {
+      "path": "../../okradioinfo",
+    },
+    {
+      "path": "../../okradio",
+    },
+  ],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "okradio",
+  },
+}
