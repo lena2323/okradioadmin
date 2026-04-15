@@ -10,6 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <style>
+      /* ... tvoj postojeći CSS ostaje isti ... */
       :root {
         --primary: #89c753;
         --primary-dark: #76ac46;
@@ -97,10 +98,15 @@
         justify-content: center;
         align-items: center;
         gap: 10px;
+        margin-bottom: 10px;
       }
       .btn-primary {
         background: var(--primary);
         color: #064e3b;
+      }
+      .btn-secondary {
+        background: #334155;
+        color: #fff;
       }
       .upload-zone {
         padding: 20px;
@@ -122,6 +128,12 @@
         font-size: 1.8rem;
         color: #fff;
         font-weight: bold;
+      }
+      .time-info {
+        font-size: 0.7rem;
+        opacity: 0.7;
+        margin-bottom: 10px;
+        display: block;
       }
     </style>
   </head>
@@ -163,8 +175,7 @@
           onchange="uploadImage(this.files[0])"
         />
         <button
-          class="btn"
-          style="background: #334155; color: #fff"
+          class="btn btn-secondary"
           onclick="document.getElementById('bg-upload').click()"
         >
           PROMENI SLIKU
@@ -182,26 +193,75 @@
       <div class="upload-zone">
         <input
           type="file"
-          id="music-upload"
+          id="music-domace"
           multiple
           accept=".mp3"
           style="display: none"
-          onchange="handleFileUpload(this.files)"
+          onchange="handleFileUpload(this.files, 'domace')"
         />
         <button
           class="btn btn-primary"
-          onclick="document.getElementById('music-upload').click()"
+          onclick="document.getElementById('music-domace').click()"
         >
-          DODAJ MP3 FAJLOVE
+          <i class="fas fa-plus-circle"></i> DODAJ DOMAĆU MUZIKU
         </button>
+        <span class="time-info">Emituje se: 06:00 - 14:00</span>
+
+        <hr
+          style="
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 15px 0;
+          "
+        />
+
+        <input
+          type="file"
+          id="music-strane"
+          multiple
+          accept=".mp3"
+          style="display: none"
+          onchange="handleFileUpload(this.files, 'strane')"
+        />
+        <button
+          class="btn btn-secondary"
+          onclick="document.getElementById('music-strane').click()"
+        >
+          <i class="fas fa-globe"></i> DODAJ STRANU MUZIKU
+        </button>
+        <span class="time-info">Emituje se: 14:00 - 06:00</span>
+
         <div
           id="music-status"
-          style="font-size: 0.8rem; margin-top: 10px; color: var(--primary)"
+          style="
+            font-size: 0.8rem;
+            margin-top: 10px;
+            color: var(--primary);
+            font-weight: bold;
+          "
         ></div>
       </div>
 
       <div class="section-title">
-        <i class="fas fa-list-ul"></i> Lista Pesama na Serveru
+        <i class="fas fa-list-ul"></i> Pesme na Serveru
+        <select
+          id="folder-select"
+          onchange="fetchPlaylist()"
+          style="
+            background: #020617;
+            color: var(--primary);
+            border: 1px solid #334155;
+            border-radius: 5px;
+            margin-left: 10px;
+            padding: 2px 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+          "
+        >
+          <option value="domace">Domaće</option>
+          <option value="strane">Strane</option>
+        </select>
+
         <button
           onclick="fetchPlaylist()"
           style="
@@ -209,7 +269,7 @@
             border: none;
             color: var(--primary);
             cursor: pointer;
-            margin-left: 10px;
+            margin-left: 5px;
           "
         >
           <i class="fas fa-sync-alt"></i>
@@ -232,7 +292,9 @@
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       const CAFE_SLUG = "sunce";
+      const BACKEND_URL = "http://okradio.runasp.net"; // Proveri da li je ovo tvoj tačan URL
 
+      // ... checkPassword i uploadImage funkcije ostaju iste ...
       async function checkPassword() {
         const input = document.getElementById("pass-input").value;
         const { data } = await db
@@ -277,24 +339,31 @@
         }
       }
 
-      async function handleFileUpload(files) {
+      // MODIFIKOVANA FUNKCIJA ZA BULK UPLOAD U SPECIFIČAN FOLDER
+      async function handleFileUpload(files, folder) {
         if (!files.length) return;
+
         const status = document.getElementById("music-status");
-        status.innerHTML = "🚀 Slanje na server...";
+        status.style.color = "var(--primary)";
+        status.innerHTML = `🚀 Šaljem ${files.length} pesama u folder: <b>${folder}</b>...`;
+
         const formData = new FormData();
         for (let f of files) {
           formData.append("files", f);
         }
+
         try {
-          const res = await fetch("http://okradio.runasp.net/upload", {
+          // Dodajemo folder kao Query parametar (npr. /upload?folder=domace)
+          const res = await fetch(`${BACKEND_URL}/upload?folder=${folder}`, {
             method: "POST",
             body: formData,
           });
+
           if (res.ok) {
-            status.innerHTML = "✅ Uspešno!";
+            status.innerHTML = `✅ Uspešno poslate ${files.length} pesme u ${folder}!`;
             fetchPlaylist();
           } else {
-            status.innerHTML = "❌ Greška.";
+            status.innerHTML = "❌ Greška na serveru prilikom slanja.";
           }
         } catch (e) {
           status.innerHTML = "❌ Backend nedostupan.";
@@ -303,11 +372,25 @@
 
       async function fetchPlaylist() {
         const list = document.getElementById("song-list");
-        list.innerHTML = "⏳ Učitavam...";
+        const selectedFolder = document.getElementById("folder-select").value; // Uzimamo folder iz dropdown-a
+
+        list.innerHTML = `<li style="opacity: 0.5">⏳ Učitavam folder: ${selectedFolder}...</li>`;
+
         try {
-          const res = await fetch("http://okradio.runasp.net/playlist");
+          const res = await fetch(
+            `${BACKEND_URL}/playlist?folder=${selectedFolder}`,
+          );
+
+          if (!res.ok) throw new Error("Server error");
+
           const songs = await res.json();
           list.innerHTML = "";
+
+          if (songs.length === 0) {
+            list.innerHTML = `<li style='opacity:0.5'>Nema pesama u folderu "${selectedFolder}".</li>`;
+            return;
+          }
+
           songs.forEach((s, i) => {
             const li = document.createElement("li");
             li.style.padding = "10px";
@@ -316,7 +399,9 @@
             list.appendChild(li);
           });
         } catch (e) {
-          list.innerHTML = "❌ Greška pri učitavanju.";
+          list.innerHTML =
+            "<li style='color: #ff4444'>❌ Greška pri učitavanju liste.</li>";
+          console.error(e);
         }
       }
     </script>

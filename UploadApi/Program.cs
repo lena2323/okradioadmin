@@ -18,33 +18,53 @@ string ftpPass = "av6VDA8TsZ4MXPR";
 app.MapPost("/upload", async (HttpRequest request) => {
     try {
         var form = await request.ReadFormAsync();
-        var file = form.Files.FirstOrDefault();
-        if (file == null) return Results.BadRequest("Nema fajla.");
-        var remotePath = "/media/Server_1/" + file.FileName;
+        var files = form.Files; 
+        var folder = request.Query["folder"].ToString(); 
+
+        if (files.Count == 0) return Results.BadRequest("Nema fajlova za upload.");
+        if (string.IsNullOrEmpty(folder)) return Results.BadRequest("Folder nije specificiran.");
+
         using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
         ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
         ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
         await ftp.ConnectAsync();
-        using var fileStream = file.OpenReadStream();
-        var status = await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
+
+        foreach (var file in files) {
+            var remotePath = $"/media/Server_1/{folder}/{file.FileName}";
+            
+            using var fileStream = file.OpenReadStream();
+            await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
+        }
+
         await ftp.DisconnectAsync();
-        return status == FtpStatus.Success ? Results.Ok("Fajl poslat!") : Results.Problem("FTP Greška.");
-    } catch (Exception ex) { return Results.Problem(ex.ToString()); }
+        return Results.Ok($"{files.Count} fajlova uspešno poslato u folder {folder}!");
+    } catch (Exception ex) { 
+        return Results.Problem(ex.ToString()); 
+    }
 });
 
-app.MapGet("/playlist", async () => {
+app.MapGet("/playlist", async (HttpContext context) => { 
     try {
+        string folder = context.Request.Query["folder"].ToString();
+        if (string.IsNullOrEmpty(folder)) folder = "domace";
+
         using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
         ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
         ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
         await ftp.ConnectAsync();
-        var list = await ftp.GetListingAsync("/media/Server_1/");
+
+        var remotePath = $"/media/Server_1/{folder}/";
+        var list = await ftp.GetListingAsync(remotePath);
+        
         var songs = list.Where(f => f.Type == FtpObjectType.File)
-                        .Select(f => new { name = f.Name, size = f.Size, is_file = true }).ToList();
+                        .Select(f => new { name = f.Name, size = f.Size, is_file = true })
+                        .ToList();
+                        
         await ftp.DisconnectAsync();
         return Results.Json(songs);
-    } catch (Exception ex) { return Results.Problem(ex.Message); }
+    } catch (Exception ex) { 
+        return Results.Problem(ex.Message); 
+    }
 });
-
 app.MapGet("/", () => "API Online - Samo Upload i Pregled");
 app.Run();
