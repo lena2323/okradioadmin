@@ -1,70 +1,94 @@
 using FluentFTP;
-using FluentFTP.Helpers;
 using Microsoft.AspNetCore.Http.Features;
-using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<FormOptions>(o => { o.MultipartBodyLengthLimit = 500_000_000; });
 builder.Services.AddCors();
 var app = builder.Build();
 
-app.UseDeveloperExceptionPage(); 
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
-string ftpHost = "usa10.fastcast4u.com";
-string ftpUser = "lena2323";
-string ftpPass = "av6VDA8TsZ4MXPR";
+async Task<(string Host, string User, string Pass)?> GetFtpConfig(string slug)
+{
+    try {
+        using var http = new HttpClient();
+        string url = $"https://wnfvyylfinrghsrmhmlp.supabase.co/rest/v1/cafes?slug=eq.{slug}&select=ftp_host,ftp_user,ftp_pass";
+        string key = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
 
-app.MapPost("/upload", async (HttpRequest request) => {
+        http.DefaultRequestHeaders.Add("apikey", key);
+        http.DefaultRequestHeaders.Add("Authorization", "Bearer " + key);
+
+        var content = await http.GetStringAsync(url);
+        using var doc = JsonDocument.Parse(content);
+        var root = doc.RootElement;
+
+        if (root.GetArrayLength() == 0) return null;
+
+        return (root[0].GetProperty("ftp_host").GetString() ?? "", 
+                root[0].GetProperty("ftp_user").GetString() ?? "", 
+                root[0].GetProperty("ftp_pass").GetString() ?? "");
+    }
+    catch { return null; }
+}
+
+app.MapPost("/upload/{cafe}", async (string cafe, string folder, HttpRequest request) =>
+{
+    var cfg = await GetFtpConfig(cafe);
+    if (cfg == null) return Results.BadRequest("Kafić nije nađen.");
+
     try {
         var form = await request.ReadFormAsync();
         var files = form.Files; 
-        var folder = request.Query["folder"].ToString(); 
+        
+        if (files == null || files.Count == 0) return Results.BadRequest("Nema fajlova za upload.");
 
-        if (files.Count == 0) return Results.BadRequest("Nema fajlova za upload.");
-        if (string.IsNullOrEmpty(folder)) return Results.BadRequest("Folder nije specificiran.");
-
-        using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
-        ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
+        using var ftp = new FtpClient(cfg.Value.Host, cfg.Value.User, cfg.Value.Pass);
         ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
         await ftp.ConnectAsync();
 
-        foreach (var file in files) {
-            var remotePath = $"/media/Server_1/{folder}/{file.FileName}";
+        int uploadedCount = 0;
+
+        foreach (var file in files)
+        {
+            string remotePath = $"/media/Server_1/{folder}/{file.FileName}";
             
             using var fileStream = file.OpenReadStream();
-            await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
+            var status = await ftp.UploadStreamAsync(fileStream, remotePath, FtpRemoteExists.Overwrite);
+            
+            if (status == FtpStatus.Success)
+            {
+                uploadedCount++;
+            }
         }
 
         await ftp.DisconnectAsync();
-        return Results.Ok($"{files.Count} fajlova uspešno poslato u folder {folder}!");
-    } catch (Exception ex) { 
-        return Results.Problem(ex.ToString()); 
-    }
+
+        return Results.Ok(new { 
+            message = "Batch upload završen", 
+            total = files.Count, 
+            uploaded = uploadedCount 
+        });
+    } catch (Exception ex) { return Results.Problem(ex.Message); }
 });
 
-app.MapGet("/playlist", async (HttpContext context) => { 
-    try {
-        string folder = context.Request.Query["folder"].ToString();
-        if (string.IsNullOrEmpty(folder)) folder = "domace";
+app.MapGet("/playlist/{cafe}", async (string cafe, string folder) =>
+{
+    var cfg = await GetFtpConfig(cafe);
+    if (cfg == null) return Results.BadRequest("Kafić nije nađen.");
 
-        using var ftp = new FtpClient(ftpHost, ftpUser, ftpPass);
-        ftp.DataConnectionType = FtpDataConnectionType.AutoPassive;
+    try {
+        using var ftp = new FtpClient(cfg.Value.Host, cfg.Value.User, cfg.Value.Pass);
         ftp.ValidateCertificate += (control, e) => { e.Accept = true; };
         await ftp.ConnectAsync();
-
-        var remotePath = $"/media/Server_1/{folder}/";
-        var list = await ftp.GetListingAsync(remotePath);
         
+        var list = await ftp.GetListingAsync($"/media/Server_1/{folder}/");
         var songs = list.Where(f => f.Type == FtpObjectType.File)
-                        .Select(f => new { name = f.Name, size = f.Size, is_file = true })
-                        .ToList();
-                        
+                        .Select(f => new { name = f.Name, size = f.Size }).ToList();
+        
         await ftp.DisconnectAsync();
         return Results.Json(songs);
-    } catch (Exception ex) { 
-        return Results.Problem(ex.Message); 
-    }
+    } catch (Exception ex) { return Results.Problem(ex.Message); }
 });
-app.MapGet("/", () => "API Online - Samo Upload i Pregled");
+
 app.Run();

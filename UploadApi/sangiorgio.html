@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cafe Sunce | Admin Panel</title>
+    <title>Caffe San Giorgio | Admin Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link
       rel="stylesheet"
@@ -52,6 +52,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         width: 100%;
         max-width: 500px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       }
       .admin-card {
         display: none;
@@ -158,8 +159,8 @@
 
     <div class="admin-card" id="main-panel">
       <header>
-        <i class="fas fa-sun"></i>
-        <div id="cafe-display-name">Cafe Sunce</div>
+        <i class="fas fa-utensils"></i>
+        <div id="cafe-display-name">Caffe San Giorgio</div>
       </header>
 
       <div class="section-title">
@@ -204,7 +205,7 @@
         >
           <i class="fas fa-plus-circle"></i> DODAJ DOMAĆU MUZIKU
         </button>
-        <span class="time-info">Emituje se: 06:00 - 14:00</span>
+        <span class="time-info">Emituje se: Prepodne</span>
 
         <hr
           style="
@@ -228,7 +229,7 @@
         >
           <i class="fas fa-globe"></i> DODAJ STRANU MUZIKU
         </button>
-        <span class="time-info">Emituje se: 14:00 - 06:00</span>
+        <span class="time-info">Emituje se: Popodne / Veče</span>
 
         <div
           id="music-status"
@@ -311,7 +312,7 @@
       const SUPABASE_URL = "https://wnfvyylfinrghsrmhmlp.supabase.co";
       const SUPABASE_KEY = "sb_publishable_l2-lCystkLYT6wzFY1D4Kg_X9KOU_vB";
       const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const CAFE_SLUG = "sunce";
+      const CAFE_SLUG = "sangiorgio";
       const BACKEND_URL = "http://okradio.runasp.net";
 
       async function checkPassword() {
@@ -339,7 +340,7 @@
         const status = document.getElementById("img-status");
         status.innerHTML = "⏳ Menjam sliku...";
         try {
-          const fileName = `bg-${Date.now()}.jpg`;
+          const fileName = `bg-${CAFE_SLUG}-${Date.now()}.jpg`;
           await db.storage
             .from("backgrounds")
             .upload(fileName, file, { upsert: true });
@@ -354,7 +355,7 @@
           document.getElementById("bg-preview").style.display = "block";
           status.innerHTML = "✅ Slika sačuvana!";
         } catch (e) {
-          status.innerHTML = "❌ Greška.";
+          status.innerHTML = "❌ Greška pri čuvanju slike.";
         }
       }
 
@@ -362,15 +363,11 @@
         if (!files.length) return;
         const status = document.getElementById("music-status");
         status.innerHTML = `🚀 Šaljem ${files.length} pesama u folder: ${folder}...`;
-
         const formData = new FormData();
         for (let f of files) {
           formData.append("files", f);
         }
-
         try {
-          // BITNO: Dodajemo folder kao QUERY PARAMETAR (?folder=...)
-          // URL mora biti: /upload/sunce?folder=domace
           const res = await fetch(
             `${BACKEND_URL}/upload/${CAFE_SLUG}?folder=${folder}`,
             {
@@ -378,13 +375,11 @@
               body: formData,
             },
           );
-
           if (res.ok) {
             status.innerHTML = `✅ Uspešno poslate pesme u ${folder}!`;
             fetchPlaylist();
           } else {
-            status.innerHTML =
-              "❌ Greška 405 ili 500: Proveri rute na backendu.";
+            status.innerHTML = "❌ Greška na serveru prilikom slanja.";
           }
         } catch (e) {
           status.innerHTML = "❌ Backend nedostupan.";
@@ -395,19 +390,16 @@
         const list = document.getElementById("song-list");
         const folder = document.getElementById("folder-select").value;
         list.innerHTML = `<li style="opacity: 0.5">⏳ Učitavam folder: ${folder}...</li>`;
-
         try {
           const res = await fetch(
             `${BACKEND_URL}/playlist/${CAFE_SLUG}?folder=${folder}`,
           );
           const songs = await res.json();
           list.innerHTML = "";
-
           if (!songs || songs.length === 0) {
             list.innerHTML = `<li style='opacity:0.5'>Nema pesama u folderu "${folder}".</li>`;
             return;
           }
-
           songs.forEach((s, i) => {
             const li = document.createElement("li");
             li.style.padding = "10px";
