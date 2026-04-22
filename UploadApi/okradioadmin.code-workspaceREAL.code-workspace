@@ -9,6 +9,9 @@
     {
       "path": "../../okradio",
     },
+    {
+      "path": "../../okradioApp",
+    },
   ],
   "settings": {
     "liveServer.settings.multiRootWorkspaceName": "okradio",
